@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Film;
