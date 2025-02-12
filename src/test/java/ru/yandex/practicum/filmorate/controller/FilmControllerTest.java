@@ -21,14 +21,12 @@ public class FilmControllerTest {
 
     @Test
     void shouldCreateAndUpdateFilm() throws Exception {
-        String filmJson = """
-                {
-                  "name": "Lord of the Ring",
-                  "description": "The Fellowship of the Ring",
-                  "releaseDate": "2001-12-10",
-                  "duration": 178
-                }
-                """;
+        String filmJson = "{"
+                + "\"name\": \"Lord of the Ring\","
+                + "\"description\": \"The Fellowship of the Ring\","
+                + "\"releaseDate\": \"2001-12-10\","
+                + "\"duration\": 178"
+                + "}";
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -39,15 +37,13 @@ public class FilmControllerTest {
                 .andExpect(jsonPath("$.releaseDate").value("2001-12-10"))
                 .andExpect(jsonPath("$.duration").value("178"));
 
-        String updUserJson = """
-                {
-                    "id": 1,
-                    "name": "Lord of the Ring",
-                    "description": "Two towers",
-                    "releaseDate": "2002-12-05",
-                    "duration": 179
-                }
-                """;
+        String updUserJson = "{"
+                + "\"id\": 1,"
+                + "\"name\": \"Lord of the Ring\","
+                + "\"description\": \"Two towers\","
+                + "\"releaseDate\": \"2002-12-05\","
+                + "\"duration\": 179"
+                + "}";
 
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -61,26 +57,22 @@ public class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithInvalidName() throws Exception {
-        String invalidFilmJson = """
-                {
-                  "description": "The Fellowship of the Ring",
-                  "releaseDate": "2001-12-10",
-                  "duration": 178
-                }
-                """;
+        String invalidFilmJson = "{"
+                + "\"description\": \"The Fellowship of the Ring\","
+                + "\"releaseDate\": \"2001-12-10\","
+                + "\"duration\": 178"
+                + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidFilmJson))
                 .andExpect(status().isBadRequest());
 
-        String invalidFilmJson2 = """
-                {
-                  "name": " ",
-                  "description": "The Fellowship of the Ring",
-                  "releaseDate": "2001-12-10",
-                  "duration": 178
-                }
-                """;
+        String invalidFilmJson2 = "{"
+                + "\"name\": \" \","
+                + "\"description\": \"The Fellowship of the Ring\","
+                + "\"releaseDate\": \"2001-12-10\","
+                + "\"duration\": 178"
+                + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidFilmJson2))
@@ -89,17 +81,15 @@ public class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithLongDescription() throws Exception {
-        String invalidFilmJson = """
-                {
-                  "name": "Lord of the Ring",
-                  "description": "Братство распалось, но Кольцо Всевластья должно быть уничтожено.
-                   Фродо и Сэм вынуждены довериться Голлуму, который взялся провести их к вратам Мордора.
-                   Громадная армия Сарумана приближается: члены братства и их союзники готовы принять бой.
-                   Битва за Средиземье продолжается.",
-                  "releaseDate": "2002-12-05",
-                  "duration": 179
-                }
-                """;
+        String invalidFilmJson = "{"
+                + "\"name\": \"Lord of the Ring\","
+                + "\"description\": \"Братство распалось, но Кольцо Всевластья должно быть уничтожено. "
+                + "Фродо и Сэм вынуждены довериться Голлуму, который взялся провести их к вратам Мордора. "
+                + "Громадная армия Сарумана приближается: члены братства и их союзники готовы принять бой. "
+                + "Битва за Средиземье продолжается.\","
+                + "\"releaseDate\": \"2002-12-05\","
+                + "\"duration\": 179"
+                + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidFilmJson))
@@ -108,14 +98,12 @@ public class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithIncorrectReleaseDate() throws Exception {
-        String invalidFilmJson = """
-                {
-                  "name": "Lord of the Ring",
-                  "description": "The Fellowship of the Ring",
-                  "releaseDate": "1801-12-10",
-                  "duration": 178
-                }
-                """;
+        String invalidFilmJson = "{"
+                + "\"name\": \"Lord of the Ring\","
+                + "\"description\": \"The Fellowship of the Ring\","
+                + "\"releaseDate\": \"1801-12-10\","
+                + "\"duration\": 178"
+                + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidFilmJson))
@@ -124,14 +112,12 @@ public class FilmControllerTest {
 
     @Test
     void shouldNotCreateFilmWithIncorrectDuration() throws Exception {
-        String invalidFilmJson = """
-                {
-                  "name": "Lord of the Ring",
-                  "description": "The Fellowship of the Ring",
-                  "releaseDate": "1801-12-10",
-                  "duration": -178
-                }
-                """;
+        String invalidFilmJson = "{"
+                + "\"name\": \"Lord of the Ring\","
+                + "\"description\": \"The Fellowship of the Ring\","
+                + "\"releaseDate\": \"1801-12-10\","
+                + "\"duration\": -178"
+                + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidFilmJson))

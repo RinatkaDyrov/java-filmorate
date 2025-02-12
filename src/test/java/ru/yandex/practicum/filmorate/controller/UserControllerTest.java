@@ -21,50 +21,44 @@ class UserControllerTest {
 
     @Test
     void shouldCreateAndUpdateUser() throws Exception {
-        String userJson = """
-                {
-                    "name": "Garfield",
-                    "login": "common",
-                    "email": "friend@common.ru",
-                    "birthday": "2000-08-20"
-                }
-                """;
+        String userJson = "{" +
+                "\"name\": \"Gandalf\"," +
+                "\"login\": \"GandalfTheGrey\"," +
+                "\"email\": \"wizard@common.ru\"," +
+                "\"birthday\": \"2000-08-20\"" +
+                "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Garfield"))
-                .andExpect(jsonPath("$.login").value("common"))
-                .andExpect(jsonPath("$.email").value("friend@common.ru"));
+                .andExpect(jsonPath("$.name").value("Gandalf"))
+                .andExpect(jsonPath("$.login").value("GandalfTheGrey"))
+                .andExpect(jsonPath("$.email").value("wizard@common.ru"));
 
-        String updUserJson = """
-                {
-                    "id": 1,
-                    "name": "Garfield",
-                    "login": "updated",
-                    "email": "updated@common.ru",
-                    "birthday": "2000-08-20"
-                }
-                """;
+        String updUserJson = "{" +
+                "\"id\": 1," +
+                "\"name\": \"Gandalf\"," +
+                "\"login\": \"GandalfTheWhite\"," +
+                "\"email\": \"greatWizard@common.ru\"," +
+                "\"birthday\": \"2000-08-20\"" +
+                "}";
 
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updUserJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.login").value("updated"))
-                .andExpect(jsonPath("$.email").value("updated@common.ru"));
+                .andExpect(jsonPath("$.login").value("GandalfTheWhite"))
+                .andExpect(jsonPath("$.email").value("greatWizard@common.ru"));
     }
 
     @Test
     void shouldNotCreateUserWithInvalidLogin() throws Exception {
-        String invalidUserJson = """
-                {
-                    "login": "invalid login",
-                    "email": "test@mail.com",
-                    "birthday": "1990-01-01"
-                }
-                """;
+        String invalidUserJson = "{" +
+                "\"login\": \"invalid login\"," +
+                "\"email\": \"test@mail.com\"," +
+                "\"birthday\": \"1990-01-01\"" +
+                "}";
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidUserJson))
@@ -73,13 +67,11 @@ class UserControllerTest {
 
     @Test
     void shouldNotCreateUserWithInvalidEmail() throws Exception {
-        String invalidUserJson = """
-                {
-                    "login": "login",
-                    "email": "invalidmail.com",
-                    "birthday": "1990-01-01"
-                }
-                """;
+        String invalidUserJson = "{" +
+                "\"login\": \"login\"," +
+                "\"email\": \"invalidmail.com\"," +
+                "\"birthday\": \"1990-01-01\"" +
+                "}";
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidUserJson))
@@ -88,14 +80,12 @@ class UserControllerTest {
 
     @Test
     void shouldNotCreateUserWithBirthdateInFuture() throws Exception {
-        String invalidUserJson = """
-                {
-                    "name": "Garfield",
-                    "login": "common",
-                    "email": "friend@common.ru",
-                    "birthday": "2030-08-20"
-                }
-                """;
+        String invalidUserJson = "{" +
+                "\"name\": \"Garfield\"," +
+                "\"login\": \"common\"," +
+                "\"email\": \"friend@common.ru\"," +
+                "\"birthday\": \"2030-08-20\"" +
+                "}";
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidUserJson))
@@ -104,19 +94,17 @@ class UserControllerTest {
 
     @Test
     void shouldCreateUserWithoutName() throws Exception {
-        String userJson = """
-                {
-                    "login": "GandalfTheOrange",
-                    "email": "wizards@mail.com",
-                    "birthday": "1890-01-01"
-                }
-                """;
+        String userJson = "{" +
+                "\"login\": \"NamelessDude\"," +
+                "\"email\": \"dude@mail.com\"," +
+                "\"birthday\": \"1890-01-01\"" +
+                "}";
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("GandalfTheOrange"))
-                .andExpect(jsonPath("$.login").value("GandalfTheOrange"))
-                .andExpect(jsonPath("$.email").value("wizards@mail.com"));
+                .andExpect(jsonPath("$.name").value("NamelessDude"))
+                .andExpect(jsonPath("$.login").value("NamelessDude"))
+                .andExpect(jsonPath("$.email").value("dude@mail.com"));
     }
 }
