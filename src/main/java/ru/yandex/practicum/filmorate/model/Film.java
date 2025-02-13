@@ -10,17 +10,17 @@ import java.time.LocalDate;
 
 @Data
 public class Film {
-    Long id;
+    private Long id;
 
-    @NotNull(message = "Необходимо указать название")
-    @NotBlank(message = "Название не может быть пустым")
-    String name;
+    @NotNull(message = "РќРµРѕР±С…РѕРґРёРјРѕ СѓРєР°Р·Р°С‚СЊ РЅР°Р·РІР°РЅРёРµ")
+    @NotBlank(message = "РќР°Р·РІР°РЅРёРµ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј")
+    private String name;
 
-    @Size(max = 200, message = "Максимальная длина описания — 200 символов")
-    String description;
+    @Size(max = 200, message = "РњР°РєСЃРёРјР°Р»СЊРЅР°СЏ РґР»РёРЅР° РѕРїРёСЃР°РЅРёСЏ вЂ” 200 СЃРёРјРІРѕР»РѕРІ")
+    private String description;
 
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
 
-    @Positive(message = "Продолжительность фильма должна быть положительным числом")
-    int duration;
+    @Positive(message = "РџСЂРѕРґРѕР»Р¶РёС‚РµР»СЊРЅРѕСЃС‚СЊ С„РёР»СЊРјР° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј С‡РёСЃР»РѕРј")
+    private int duration;
 }

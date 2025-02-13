@@ -9,17 +9,17 @@ import java.time.LocalDate;
 
 @Data
 public class User {
-    Long id;
+    private Long id;
 
     @Email(message = "Электронная почта не может быть пустой и должна содержать символ @")
     @NotBlank
-    String email;
+    private String email;
 
     @NotBlank
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не должен содержать пробелы")
-    String login;
+    private String login;
 
-    String name;
+    private String name;
 
-    LocalDate birthday;
+    private LocalDate birthday;
 }

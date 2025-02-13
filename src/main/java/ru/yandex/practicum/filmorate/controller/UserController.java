@@ -9,9 +9,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
@@ -19,11 +17,13 @@ public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final Map<Long, User> users = new HashMap<>();
+    private final Set<String> logins = new HashSet<>();
+    private final Set<String> emails = new HashSet<>();
 
     @GetMapping
     public Collection<User> findAll() {
         logger.info("Выполняется запрос списка всех пользователей");
-        return users.values();
+        return List.copyOf(users.values());
     }
 
     @PostMapping
@@ -33,6 +33,8 @@ public class UserController {
         logger.debug("Пользователь прошел валидацию на добавление");
         user.setId(getNextId());
         users.put(user.getId(), user);
+        logins.add(user.getLogin());
+        emails.add(user.getEmail());
         logger.info("Пользователь {} добавлен", user.getLogin());
         return user;
     }
@@ -42,6 +44,14 @@ public class UserController {
         logger.info("Обновление данных пользователя {}", newUser);
         validateUser(newUser, true);
         logger.debug("Пользователь прошел валидацию на обновление");
+        if (!users.get(newUser.getId()).getLogin().equalsIgnoreCase(newUser.getLogin())) {
+            logins.remove(users.get(newUser.getId()).getLogin());
+            logins.add(newUser.getLogin());
+        }
+        if (!users.get(newUser.getId()).getEmail().equalsIgnoreCase(newUser.getEmail())) {
+            emails.remove(users.get(newUser.getId()).getEmail());
+            emails.add(newUser.getEmail());
+        }
         users.put(newUser.getId(), newUser);
         logger.info("Пользователь с ID {} ({}) обновлен", newUser.getId(), newUser.getLogin());
         return newUser;
@@ -59,20 +69,14 @@ public class UserController {
                 throw new NotFoundException("Пользователь с таким ID не найден");
             }
         }
-
-        users.values().stream()
-                .filter(u -> !u.getId().equals(user.getId()))
-                .forEach(u -> {
-                    if (u.getEmail().equalsIgnoreCase(user.getEmail())) {
-                        logger.warn("Имейл {} уже занят", user.getEmail());
-                        throw new ValidationException("Пользователь с таким имейлом уже существует");
-                    }
-                    if (u.getLogin().equalsIgnoreCase(user.getLogin())) {
-                        logger.warn("Логин {} уже занят", user.getLogin());
-                        throw new ValidationException("Пользователь с таким логином уже существует");
-                    }
-                });
-
+        if (emails.contains(user.getEmail())) {
+            logger.warn("Имейл {} уже занят", user.getEmail());
+            throw new ValidationException("Пользователь с таким имейлом уже существует");
+        }
+        if (logins.contains(user.getLogin())) {
+            logger.warn("Логин {} уже занят", user.getLogin());
+            throw new ValidationException("Пользователь с таким логином уже существует");
+        }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             logger.warn("Дата рождения пользователя {} позже текущей", user.getBirthday());
             throw new ValidationException("Дата рождения не может быть в будущем");

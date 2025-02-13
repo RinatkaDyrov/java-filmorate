@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,7 +26,7 @@ public class FilmController {
     @GetMapping
     public Collection<Film> findAll() {
         logger.info("Выполняется запрос списка всех фильмов");
-        return films.values();
+        return List.copyOf(films.values());
     }
 
     @PostMapping
