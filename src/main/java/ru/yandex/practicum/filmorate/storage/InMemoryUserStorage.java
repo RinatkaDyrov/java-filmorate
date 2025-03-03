@@ -63,12 +63,6 @@ public class InMemoryUserStorage implements UserStorage {
         return newUser;
     }
 
-    @Override
-    public void addFriend(long userId, long friendId) {
-        User user = findUserById(userId);
-        User friend = findUserById(friendId);
-        user.
-    }
 
     private void validateUser(User user, boolean isUpdate) {
         log.debug("Запуск валидации пользователя");
