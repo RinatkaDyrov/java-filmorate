@@ -1,14 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.ValidationException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Data
 public class User {
@@ -26,6 +26,7 @@ public class User {
 
     private LocalDate birthday;
 
-    private Map<Long, User> friends;
+    @JsonIgnore
+    private Map<Long, User> friends = new HashMap<>();
 
 }

@@ -13,19 +13,19 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handlerIncorrectValidation(final ValidationException e){
+    public ErrorResponse handlerIncorrectValidation(final ValidationException e) {
         return new ErrorResponse("validation error", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlerNotFoundException(final NotFoundException e){
+    public ErrorResponse handlerNotFoundException(final NotFoundException e) {
         return new ErrorResponse("not found error", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleUnclassifiedException(final UnclassifiedException e){
+    public ErrorResponse handleUnclassifiedException(final UnclassifiedException e) {
         return new ErrorResponse("unclassified error", e.getMessage());
     }
 }

@@ -14,4 +14,6 @@ public interface UserStorage {
 
     User update(User newUser);
 
+    User updateWithFriendship(User user);
+
 }

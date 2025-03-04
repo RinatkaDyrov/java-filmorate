@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,8 +32,8 @@ public class UserService {
         return userStorage.findAll();
     }
 
-    public void addFriend(long userId, long friendId){
-        if (userId == friendId){
+    public void addFriend(long userId, long friendId) {
+        if (userId == friendId) {
             log.warn("Ошибка идентификационного номера при добавлении в друзья:" +
                     " userId: {}, friendId: {}", userId, friendId);
             throw new ValidationException("Нельзя добавить самого себя в друзья.");
@@ -42,18 +42,20 @@ public class UserService {
         User friend = userStorage.findUserById(friendId);
 
         if (user.getFriends().containsKey(friendId)) {
+            log.warn("Попытка установить уже установленную дружбу");
             throw new ValidationException("Пользователи " + user.getName() + " и " + friend.getName() + " уже друзья");
         }
 
         user.getFriends().put(friendId, friend);
         friend.getFriends().put(userId, user);
 
-        userStorage.update(user);
-        userStorage.update(friend);
+        userStorage.updateWithFriendship(user);
+        userStorage.updateWithFriendship(friend);
+        log.info("Пользователи {} и {} теперь друзья", user.getName(), friend.getName());
     }
 
-    public void deleteFriend(long userId, long friendId){
-        if (userId == friendId){
+    public void deleteFriend(long userId, long friendId) {
+        if (userId == friendId) {
             log.warn("Ошибка идентификационного номера при удалении из друзей:" +
                     " userId: {}, friendId: {}", userId, friendId);
             throw new ValidationException("Нельзя удалить самого себя из друзей.");
@@ -61,28 +63,25 @@ public class UserService {
         User user = userStorage.findUserById(userId);
         User friend = userStorage.findUserById(friendId);
 
-        if (!user.getFriends().containsKey(friendId) || !friend.getFriends().containsKey(userId)) {
-            log.warn("Попытка удалить дружбу, которой нет: userId={}, friendId={}", userId, friendId);
-            throw new ValidationException("Пользователи " + user.getName() + " и " + friend.getName() + " не дружат");
-        }
-
-
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
 
-        userStorage.update(user);
-        userStorage.update(friend);
+        userStorage.updateWithFriendship(user);
+        userStorage.updateWithFriendship(friend);
+        log.info("Пользователи {} и {} больше не друзья", user.getName(), friend.getName());
     }
 
-    public Collection<User> getFriendByUserId(long id){
+    public Collection<User> getFriendByUserId(long id) {
+        log.debug("Получение списка друзей пользователя (ID: {})", id);
         return userStorage.findUserById(id).getFriends().values();
     }
 
     public Collection<User> getCommonFriends(long id, long otherId) {
+        log.debug("Получение списка общих друзей пользователей (ID: {}) и (ID: {})", id, otherId);
         Collection<User> friendsByUser = userStorage.findUserById(id).getFriends().values();
         Collection<User> friendsByOtherUser = userStorage.findUserById(otherId).getFriends().values();
         return friendsByUser.stream()
                 .filter(friendsByOtherUser::contains)
-                .toList();
+                .collect(Collectors.toList());
     }
 }
