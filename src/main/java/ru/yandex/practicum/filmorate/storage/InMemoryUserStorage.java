@@ -26,7 +26,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User findUserById(long id) {
         User user = users.get(id);
-        if (user == null) {
+        if (user == null){
             throw new NotFoundException("Пользователь с ID " + id + " не найден");
         }
         return user;
@@ -38,6 +38,7 @@ public class InMemoryUserStorage implements UserStorage {
         validateUser(user, false);
         log.debug("Пользователь прошел валидацию на добавление");
         user.setId(getNextId());
+        users.put(user.getId(), user);
         logins.add(user.getLogin());
         emails.add(user.getEmail());
         users.put(user.getId(), user);
