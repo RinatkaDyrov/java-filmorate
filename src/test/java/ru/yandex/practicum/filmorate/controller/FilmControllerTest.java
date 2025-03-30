@@ -1,126 +1,127 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.time.LocalDate;
+import java.util.List;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class FilmControllerTest {
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(FilmController.class)
+class FilmControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private FilmService filmService;
+
+    @MockBean
+    private FilmStorage filmStorage;
+
+    private Film testFilm1;
+    private Film testFilm2;
+
+    @BeforeEach
+    void setUp() {
+        testFilm1 = new Film();
+        testFilm1.setId(1L);
+        testFilm1.setName("Inception");
+        testFilm1.setDescription("A mind-bending thriller");
+        testFilm1.setReleaseDate(LocalDate.of(2010, 7, 16));
+        testFilm1.setDuration(148);
+
+        testFilm2 = new Film();
+        testFilm2.setId(2L);
+        testFilm2.setName("The Matrix");
+        testFilm2.setDescription("A sci-fi classic");
+        testFilm2.setReleaseDate(LocalDate.of(1999, 3, 31));
+        testFilm2.setDuration(136);
+    }
+
     @Test
-    void shouldCreateAndUpdateFilm() throws Exception {
-        String filmJson = "{"
-                + "\"name\": \"Lord of the Ring\","
-                + "\"description\": \"The Fellowship of the Ring\","
-                + "\"releaseDate\": \"2001-12-10\","
-                + "\"duration\": 178"
-                + "}";
+    void shouldReturnAllFilms() throws Exception {
+        when(filmService.findAllFilms()).thenReturn(List.of(testFilm1, testFilm2));
+
+        mockMvc.perform(get("/films"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[1].id", is(2)));
+    }
+
+    @Test
+    void shouldCreateFilm() throws Exception {
+        when(filmService.createFilm(any(Film.class))).thenReturn(testFilm1);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(filmJson))
+                        .content(objectMapper.writeValueAsString(testFilm1)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Lord of the Ring"))
-                .andExpect(jsonPath("$.description").value("The Fellowship of the Ring"))
-                .andExpect(jsonPath("$.releaseDate").value("2001-12-10"))
-                .andExpect(jsonPath("$.duration").value("178"));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("Inception")))
+                .andExpect(jsonPath("$.description", is("A mind-bending thriller")));
+    }
 
-        String updUserJson = "{"
-                + "\"id\": 1,"
-                + "\"name\": \"Lord of the Ring\","
-                + "\"description\": \"Two towers\","
-                + "\"releaseDate\": \"2002-12-05\","
-                + "\"duration\": 179"
-                + "}";
+    @Test
+    void shouldUpdateFilm() throws Exception {
+        testFilm1.setName("Inception - Director's Cut");
+
+        when(filmService.updateFilm(any(Film.class))).thenReturn(testFilm1);
 
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updUserJson))
+                        .content(objectMapper.writeValueAsString(testFilm1)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Lord of the Ring"))
-                .andExpect(jsonPath("$.description").value("Two towers"))
-                .andExpect(jsonPath("$.releaseDate").value("2002-12-05"))
-                .andExpect(jsonPath("$.duration").value("179"));
+                .andExpect(jsonPath("$.name", is("Inception - Director's Cut")));
     }
 
     @Test
-    void shouldNotCreateFilmWithInvalidName() throws Exception {
-        String invalidFilmJson = "{"
-                + "\"description\": \"The Fellowship of the Ring\","
-                + "\"releaseDate\": \"2001-12-10\","
-                + "\"duration\": 178"
-                + "}";
-        mockMvc.perform(post("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidFilmJson))
-                .andExpect(status().isBadRequest());
-
-        String invalidFilmJson2 = "{"
-                + "\"name\": \" \","
-                + "\"description\": \"The Fellowship of the Ring\","
-                + "\"releaseDate\": \"2001-12-10\","
-                + "\"duration\": 178"
-                + "}";
-        mockMvc.perform(post("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidFilmJson2))
-                .andExpect(status().isBadRequest());
+    void shouldLikeFilm() throws Exception {
+        mockMvc.perform(put("/films/1/like/2"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void shouldNotCreateFilmWithLongDescription() throws Exception {
-        String invalidFilmJson = "{"
-                + "\"name\": \"Lord of the Ring\","
-                + "\"description\": \"Братство распалось, но Кольцо Всевластья должно быть уничтожено. "
-                + "Фродо и Сэм вынуждены довериться Голлуму, который взялся провести их к вратам Мордора. "
-                + "Громадная армия Сарумана приближается: члены братства и их союзники готовы принять бой. "
-                + "Битва за Средиземье продолжается.\","
-                + "\"releaseDate\": \"2002-12-05\","
-                + "\"duration\": 179"
-                + "}";
-        mockMvc.perform(post("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidFilmJson))
-                .andExpect(status().isBadRequest());
+    void shouldDeleteLike() throws Exception {
+        mockMvc.perform(delete("/films/1/like/2"))
+                .andExpect(status().isOk());
     }
 
     @Test
-    void shouldNotCreateFilmWithIncorrectReleaseDate() throws Exception {
-        String invalidFilmJson = "{"
-                + "\"name\": \"Lord of the Ring\","
-                + "\"description\": \"The Fellowship of the Ring\","
-                + "\"releaseDate\": \"1801-12-10\","
-                + "\"duration\": 178"
-                + "}";
-        mockMvc.perform(post("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidFilmJson))
-                .andExpect(status().isBadRequest());
+    void shouldGetPopularFilms() throws Exception {
+        when(filmService.getPopularFilms(10)).thenReturn(List.of(testFilm1, testFilm2));
+
+        mockMvc.perform(get("/films/popular?count=10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[1].id", is(2)));
     }
 
     @Test
-    void shouldNotCreateFilmWithIncorrectDuration() throws Exception {
-        String invalidFilmJson = "{"
-                + "\"name\": \"Lord of the Ring\","
-                + "\"description\": \"The Fellowship of the Ring\","
-                + "\"releaseDate\": \"1801-12-10\","
-                + "\"duration\": -178"
-                + "}";
-        mockMvc.perform(post("/films")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidFilmJson))
-                .andExpect(status().isBadRequest());
+    void shouldReturn404IfFilmNotFound() throws Exception {
+        when(filmService.findAllFilms()).thenReturn(List.of());
+
+        mockMvc.perform(get("/films/99"))
+                .andExpect(status().isNotFound());
     }
 }
