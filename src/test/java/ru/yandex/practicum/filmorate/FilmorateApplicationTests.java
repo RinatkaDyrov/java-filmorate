@@ -17,8 +17,6 @@ class FilmorateApplicationTests {
 	@Autowired
 	private FilmService filmService;
 
-
-
 	@Test
 	void contextLoads() {
 		assertNotNull(userService);
