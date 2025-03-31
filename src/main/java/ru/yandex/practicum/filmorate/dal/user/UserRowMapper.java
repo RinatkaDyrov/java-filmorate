@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dal;
+package ru.yandex.practicum.filmorate.dal.user;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
