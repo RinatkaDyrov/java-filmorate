@@ -54,7 +54,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
-		</dependencies>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -62,24 +62,24 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-checkstyle-plugin</artifactId>
-			<version>3.3.1</version>
-			<configuration>
-				<configLocation>checkstyle.xml</configLocation>
-				<includeTestSourceDirectory>true</includeTestSourceDirectory>
-				<failOnViolation>true</failOnViolation>
-				<logViolationsToConsole>true</logViolationsToConsole>
-			</configuration>
-			<executions>
-				<execution>
-					<goals>
-						<goal>check</goal>
-					</goals>
-					<phase>compile</phase>
-				</execution>
-			</executions>
-		</plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<failOnViolation>true</failOnViolation>
+					<logViolationsToConsole>true</logViolationsToConsole>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>compile</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<resources>
 			<resource>
