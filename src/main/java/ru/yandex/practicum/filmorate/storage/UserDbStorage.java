@@ -29,13 +29,13 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User findUserById(long id) {
         return userRepository.findUserById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + id + " не найден"));
     }
 
     @Override
     public User findUserByEmail(String email) {
         return userRepository.findUserByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден с email: " + email));
+                .orElseThrow(() -> new NotFoundException("Пользователь с email " + email + " не найден"));
     }
 
     @Override
@@ -48,28 +48,33 @@ public class UserDbStorage implements UserStorage {
         return userRepository.update(newUser);
     }
 
-    public void addFriend(long userId, long friendId, boolean statusConfirm) {
-        friendshipRepository.addFriendRequest(userId, friendId);
+    @Override
+    public boolean addFriend(long userId, long friendId) {
+        return friendshipRepository.addFriendRequest(userId, friendId);
     }
 
+    @Override
     public void confirmFriendship(long userId, long friendId) {
         friendshipRepository.confirmFriendship(userId, friendId);
     }
 
+    @Override
     public Collection<User> getFriends(long userId) {
-        // Получаем список друзей через FriendshipRepository
         return new ArrayList<>(friendshipRepository.findFriendsByUserId(userId));
     }
 
-    public int getFriendCount(long userId) {
+    @Override
+    public int getFriendsCount(long userId) {
         return friendshipRepository.countFriendsByUserId(userId);
     }
 
+    @Override
     public boolean removeFriend(long userId, long friendId) {
         return friendshipRepository.removeFriend(userId, friendId);
     }
 
-    public User updateWithFriendship(User user) {
-        return userRepository.update(user);
+    @Override
+    public Collection<User> getCommonFriends(long userId, long friendId) {
+        return friendshipRepository.findCommonFriends(userId, friendId);
     }
 }

@@ -11,12 +11,12 @@ import ru.yandex.practicum.filmorate.model.RatingMBA;
 import java.util.List;
 
 @Repository
-public class RatingRepository extends BaseRepository {
+public class RatingRepository extends BaseRepository<RatingMBA> {
 
     private static final String INSERT_QUERY = "INSERT INTO rating_mba(name) VALUES (?) returning id";
     private static final String FIND_FILMS_BY_RATING_QUERY = "SELECT f.* FROM films f JOIN rating_mba r ON f.rating_id = r.id WHERE r.name = ?";
 
-    public RatingRepository(JdbcTemplate jdbc, RowMapper mapper) {
+    public RatingRepository(JdbcTemplate jdbc, RowMapper<RatingMBA> mapper) {
         super(jdbc, mapper);
     }
 

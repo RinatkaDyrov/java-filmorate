@@ -4,12 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
@@ -17,19 +17,16 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
-    private final UserRepository userRepository;
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, UserRepository userRepository1) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
-        this.userRepository = userRepository1;
     }
 
     public UserDto createUser(NewUserRequest request) {
@@ -39,15 +36,15 @@ public class UserService {
         userStorage.findUserByEmail(request.getEmail());
 
         User user = UserMapper.mapToUser(request);
-        user = userRepository.save(user);
+        user = userStorage.create(user);
         return UserMapper.mapToUserDto(user);
     }
 
-    public User updateUser(long id, UpdateUserRequest request) {
+    public UserDto updateUser(long id, UpdateUserRequest request) {
         User updUser = userStorage.findUserById(id);
         updUser = UserMapper.updateUserFields(updUser, request);
         updUser = userStorage.update(updUser);
-        return updUser;
+        return UserMapper.mapToUserDto(updUser);
     }
 
     public Collection<UserDto> getAllUsers() {
@@ -71,17 +68,18 @@ public class UserService {
         User user = userStorage.findUserById(userId);
         User friend = userStorage.findUserById(friendId);
 
-        if (user.getFriends().containsKey(friendId)) {
-            log.warn("Попытка установить уже установленную дружбу");
-            throw new ValidationException("Пользователи " + user.getName() + " и " + friend.getName() + " уже друзья");
+        if (user == null || friend == null) {
+            log.warn("Ошибка: один из пользователей не найден. userId: {}, friendId: {}", userId, friendId);
+            throw new NotFoundException("Один из пользователей не существует.");
         }
 
-        user.getFriends().put(friendId, friend);
-        friend.getFriends().put(userId, user);
-
-        userStorage.update(user);
-        userStorage.update(friend);
-        log.info("Пользователи {} и {} теперь друзья", user.getName(), friend.getName());
+        boolean success = userStorage.addFriend(userId, friendId);
+        if (success) {
+            log.info("Пользователь {} отправил заявку на дружбу пользователю {}", user.getName(), friend.getName());
+        } else {
+            log.warn("Ошибка при добавлении друга. userId: {}, friendId: {}", userId, friendId);
+            throw new RuntimeException("Не удалось добавить друга.");
+        }
     }
 
     public void deleteFriend(long userId, long friendId) {
@@ -93,25 +91,27 @@ public class UserService {
         User user = userStorage.findUserById(userId);
         User friend = userStorage.findUserById(friendId);
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        if (user == null || friend == null) {
+            log.warn("Ошибка: один из пользователей не найден. userId: {}, friendId: {}", userId, friendId);
+            throw new NotFoundException("Один из пользователей не существует.");
+        }
 
-        userStorage.update(user);
-        userStorage.update(friend);
-        log.info("Пользователи {} и {} больше не друзья", user.getName(), friend.getName());
+        boolean success = userStorage.removeFriend(userId, friendId);
+        if (success) {
+            log.info("Пользователь {} удалил пользователя {} из друзей", user.getName(), friend.getName());
+        } else {
+            log.warn("Ошибка при удалении друга. userId: {}, friendId: {}", userId, friendId);
+            throw new RuntimeException("Не удалось удалить пользователя из друзей.");
+        }
     }
 
     public Collection<User> getFriendByUserId(long id) {
         log.debug("Получение списка друзей пользователя (ID: {})", id);
-        return userStorage.findUserById(id).getFriends().values();
+        return userStorage.getFriends(id);
     }
 
-    public Collection<User> getCommonFriends(long id, long otherId) {
-        log.debug("Получение списка общих друзей пользователей (ID: {}) и (ID: {})", id, otherId);
-        Collection<User> friendsByUser = userStorage.findUserById(id).getFriends().values();
-        Collection<User> friendsByOtherUser = userStorage.findUserById(otherId).getFriends().values();
-        return friendsByUser.stream()
-                .filter(friendsByOtherUser::contains)
-                .collect(Collectors.toList());
+    public Collection<User> getCommonFriends(long userId, long friendId) {
+        log.debug("Получение списка общих друзей пользователей (ID: {}) и (ID: {})", userId, friendId);
+        return userStorage.getCommonFriends(userId, friendId);
     }
 }

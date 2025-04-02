@@ -17,4 +17,27 @@ public interface UserStorage {
 
     User update(User newUser);
 
+    default boolean addFriend(long userId, long friendId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
+
+    default void confirmFriendship(long userId, long friendId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
+
+    default Collection<User> getFriends(long userId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
+
+    default Collection<User> getCommonFriends(long userId, long friendId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    };
+
+    default int getFriendsCount(long userId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
+
+    default boolean removeFriend(long userId, long friendId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
 }

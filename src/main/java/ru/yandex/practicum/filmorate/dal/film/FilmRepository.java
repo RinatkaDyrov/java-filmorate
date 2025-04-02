@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,12 +38,12 @@ public class FilmRepository extends BaseRepository<Film> {
         return findOne(FIND_BY_ID_QUERY, id);
     }
 
-    public Optional<Film> findFilmByGenre(String genre) {
-        return findOne(FIND_BY_GENRE_QUERY, genre);
+    public Collection<Film> findFilmByGenre(String genre) {
+        return findMany(FIND_BY_GENRE_QUERY, genre);
     }
 
-    public Optional<Film> findFilmByRating(String rating) {
-        return findOne(FIND_BY_RATING_QUERY, rating);
+    public Collection<Film> findFilmByRating(String rating) {
+        return findMany(FIND_BY_RATING_QUERY, rating);
     }
 
     public Film save(Film film) {
