@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
@@ -21,17 +23,18 @@ public class UserController {
 
     @GetMapping
     public Collection<UserDto> findAll() {
-        return userService.getAllUsers();
+        return new ArrayList<>(userService.getAllUsers());
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
-        return userService.createUser(user);
+    public UserDto create(@RequestBody NewUserRequest userRequest) {
+        return userService.createUser(userRequest);
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User newUser) {
-        return userService.updateUser(newUser);
+    public User update(@PathVariable long id,
+                       @RequestBody UpdateUserRequest updateUserRequest) {
+        return userService.updateUser(id, updateUserRequest);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

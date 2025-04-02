@@ -17,7 +17,7 @@ public class GenreRepository extends BaseRepository {
     private static final String INSERT_QUERY = "INSERT INTO genre(name) VALUES (?) returning id";
     private static final String UPDATE_QUERY = "UPDATE genre SET name = ? WHERE id = ?";
 
-    public GenreRepository(JdbcTemplate jdbc, RowMapper mapper) {
+    public GenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
     }
 

@@ -19,6 +19,11 @@ public class FilmRepository extends BaseRepository<Film> {
             "VALUES (?, ?, ?, ?) returning id";
     private static final String UPDATE_QUERY = "UPDATE films SET name = ?, description = ?, releaseDate = ?," +
             " duration =? WHERE id = ?";
+    private static final String FIND_BY_GENRE_QUERY = "SELECT f.* FROM films f " +
+            "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
+
+    private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " +
+            "JOIN rating_mba r ON f rating_id = r.id WHERE r.name = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -30,6 +35,14 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public Optional<Film> findFilmById(long id) {
         return findOne(FIND_BY_ID_QUERY, id);
+    }
+
+    public Optional<Film> findFilmByGenre(String genre) {
+        return findOne(FIND_BY_GENRE_QUERY, genre);
+    }
+
+    public Optional<Film> findFilmByRating(String rating) {
+        return findOne(FIND_BY_RATING_QUERY, rating);
     }
 
     public Film save(Film film) {
@@ -51,5 +64,4 @@ public class FilmRepository extends BaseRepository<Film> {
                 film.getId());
         return film;
     }
-
 }

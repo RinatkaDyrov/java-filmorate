@@ -1,5 +1,5 @@
 create TABLE IF NOT EXISTS users (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
     login VARCHAR(100) NOT NULL,
     name VARCHAR(255),
@@ -24,7 +24,7 @@ create TABLE IF NOT EXISTS films (
     duration INT NOT NULL,
     genre_id INT,
     rating_id INT,
-    FOREIGN KEY (genre_id) REFERENCES genre(id)
+    FOREIGN KEY (genre_id) REFERENCES genre(id),
     FOREIGN KEY (rating_id) REFERENCES rating_mba(id)
 );
 
