@@ -22,7 +22,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAll() {
-        return filmRepository.findALlFilms();
+        Collection<Film> allFilms = filmRepository.findAllFilms();
+        allFilms.forEach(System.out::println);
+        return allFilms;
     }
 
     @Override

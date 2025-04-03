@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 
@@ -16,4 +15,6 @@ public class UserDto {
     private String login;
     private String name;
     private LocalDate birthday;
+    private Genre genre;
+    private Mpa rating;
 }

@@ -1,13 +1,20 @@
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS rating_mpa CASCADE;
+DROP TABLE IF EXISTS genre CASCADE;
+DROP TABLE IF EXISTS films CASCADE;
+DROP TABLE IF EXISTS likes CASCADE;
+DROP TABLE IF EXISTS friendship CASCADE;
+
 create TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    login VARCHAR(100) NOT NULL,
-    name VARCHAR(255),
-    birthday DATE
+    email VARCHAR(255) NOT NULL UNIQUE,
+    login VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    birthday DATE NOT NULL
 );
 
-create TABLE IF NOT EXISTS rating_mba (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+create TABLE IF NOT EXISTS rating_mpa (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(20) NOT NULL
 );
 
@@ -25,7 +32,14 @@ create TABLE IF NOT EXISTS films (
     genre_id INT,
     rating_id INT,
     FOREIGN KEY (genre_id) REFERENCES genre(id),
-    FOREIGN KEY (rating_id) REFERENCES rating_mba(id)
+    FOREIGN KEY (rating_id) REFERENCES rating_mpa(id)
+);
+
+CREATE TABLE IF NOT EXISTS film_genre (
+    film_id BIGINT NOT NULL,
+    genre_id INT NOT NULL,
+    FOREIGN KEY (film_id) REFERENCES films(id),
+    FOREIGN KEY (genre_id) REFERENCES genre(id)
 );
 
 create TABLE IF NOT EXISTS likes (

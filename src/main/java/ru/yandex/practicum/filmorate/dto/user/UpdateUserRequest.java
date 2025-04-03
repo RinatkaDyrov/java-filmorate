@@ -1,14 +1,30 @@
 package ru.yandex.practicum.filmorate.dto.user;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 @Data
 public class UpdateUserRequest {
+    private long id;
+    @Email(message = "Электронная почта не может быть пустой и должна содержать символ @")
+    @NotBlank
     private String email;
+    @NotBlank
+    @Pattern(regexp = "^[^\\s]+$", message = "Логин не должен содержать пробелы")
     private String login;
     private String name;
+
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
     private LocalDate birthday;
 
     public boolean hasEmail() {
@@ -24,6 +40,6 @@ public class UpdateUserRequest {
     }
 
     public boolean hasBirthday() {
-        return ! (birthday == null || birthday.isBefore(LocalDate.now()));
+        return ! (birthday == null);
     }
 }

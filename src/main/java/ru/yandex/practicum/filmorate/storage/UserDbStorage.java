@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
@@ -8,13 +9,14 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+@Slf4j
 @Component("userDbStorage")
 public class UserDbStorage implements UserStorage {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
-
 
     public UserDbStorage(UserRepository userRepository, FriendshipRepository friendshipRepository) {
         this.userRepository = userRepository;
@@ -23,7 +25,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        return new ArrayList<>(userRepository.findAllUsers());
+        return userRepository.findAllUsers();
     }
 
     @Override
@@ -40,17 +42,35 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+        validate(user);
         return userRepository.save(user);
+    }
+
+    private void validate(User user) {
+        if (user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+
     }
 
     @Override
     public User update(User newUser) {
-        return userRepository.update(newUser);
+        User oldUser = userRepository.findUserById(newUser.getId()).orElseThrow(() -> new NotFoundException("Нема такого"));
+        System.out.println(oldUser.toString());
+        log.info("Обновление пользователя: email={}, login={}, name={}, birthday={}, id={}",
+                newUser.getEmail(), newUser.getLogin(), newUser.getName(), newUser.getBirthday(), newUser.getId());
+        User updUSer = userRepository.update(newUser);
+        System.out.println(updUSer.toString());
+        return updUSer;
     }
 
     @Override
     public boolean addFriend(long userId, long friendId) {
-        return friendshipRepository.addFriendRequest(userId, friendId);
+        boolean addingStatus = friendshipRepository.addFriendRequest(userId, friendId);
+        if (addingStatus){
+            log.debug("Успешно");
+        }
+        return addingStatus;
     }
 
     @Override
@@ -60,7 +80,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> getFriends(long userId) {
-        return new ArrayList<>(friendshipRepository.findFriendsByUserId(userId));
+        log.info("Запрашиваются уже у хранилища друганы айдишки {}",userId);
+        List<User> friends = friendshipRepository.findFriendsByUserId(userId);
+        friends.forEach(friend -> System.out.println("дружок с айдишкой " + friend.getId()));
+        System.out.println("Всего дружочков " + friends.size());
+        return friends;
     }
 
     @Override

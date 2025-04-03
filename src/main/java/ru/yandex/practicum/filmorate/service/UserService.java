@@ -30,10 +30,15 @@ public class UserService {
     }
 
     public UserDto createUser(NewUserRequest request) {
-        if (request.getEmail() == null || request.getEmail().isEmpty()){
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
             throw new ConditionsNotMetException("Имейл должен быть указан");
         }
-        userStorage.findUserByEmail(request.getEmail());
+        try {
+            userStorage.findUserByEmail(request.getEmail());
+            throw new ConditionsNotMetException("Пользователь с таким email уже существует");
+        } catch (NotFoundException e) {
+            log.info("Создание пользователя");
+        }
 
         User user = UserMapper.mapToUser(request);
         user = userStorage.create(user);
@@ -101,17 +106,23 @@ public class UserService {
             log.info("Пользователь {} удалил пользователя {} из друзей", user.getName(), friend.getName());
         } else {
             log.warn("Ошибка при удалении друга. userId: {}, friendId: {}", userId, friendId);
-            throw new RuntimeException("Не удалось удалить пользователя из друзей.");
+            log.info("Пользователи больше не дружат.(да и не дружили)");
+//            throw new RuntimeException("Не удалось удалить пользователя из друзей.");
         }
     }
 
-    public Collection<User> getFriendByUserId(long id) {
-        log.debug("Получение списка друзей пользователя (ID: {})", id);
-        return userStorage.getFriends(id);
+    public Collection<UserDto> getFriendByUserId(long id) {
+        log.info("Запрашиваются уже у сервиса друганы айдишки {}",id);
+        return userStorage.getFriends(id)
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-    public Collection<User> getCommonFriends(long userId, long friendId) {
+    public Collection<UserDto> getCommonFriends(long userId, long friendId) {
         log.debug("Получение списка общих друзей пользователей (ID: {}) и (ID: {})", userId, friendId);
-        return userStorage.getCommonFriends(userId, friendId);
+        return userStorage.getCommonFriends(userId, friendId).stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 }
