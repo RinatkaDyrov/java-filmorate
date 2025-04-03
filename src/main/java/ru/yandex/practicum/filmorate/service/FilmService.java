@@ -44,23 +44,43 @@ public class FilmService {
     }
 
     public FilmDto createFilm(NewFilmRequest request) {
-        if (request.getName().isEmpty()){
+        if (request.getName().isEmpty()) {
             throw new ConditionsNotMetException("Название фильма должно быть указано");
         }
-        if (request.getDescription().isEmpty()){
+        if (request.getDescription().isEmpty()) {
             throw new ConditionsNotMetException("Описание фильма должно быть указано");
         }
+        // Преобразуем запрос в объект Film
         Film film = FilmMapper.mapToFilm(request);
+        // Если жанры есть, то передаем их для сохранения
+        if (request.getGenres() != null && !request.getGenres().isEmpty()) {
+            // Добавляем жанры в объект Film (сохраняем их в таблице film_genre)
+            film.setGenres(request.getGenres());
+        }
+        // Сохраняем фильм, включая жанры
         film = filmStorage.create(film);
+
         return FilmMapper.mapToFilmDto(film);
     }
 
+
     public FilmDto updateFilm(long id, UpdateFilmRequest request) {
         Film updFilm = filmStorage.findFilmById(id);
+        if (updFilm == null) {
+            throw new NotFoundException("Фильм с таким id не найден");
+        }
+
         updFilm = FilmMapper.updateFilmFields(updFilm, request);
+
+        // Если в запросе есть жанры, обновим их в базе данных
+        if (request.hasGenres()) {
+            updFilm.setGenres(request.getGenres());;
+        }
+
         updFilm = filmStorage.update(updFilm);
         return FilmMapper.mapToFilmDto(updFilm);
     }
+
 
     public void setLike(long userId, long filmId) {
         log.debug("Пользователь (userID: {}) ставит лайк фильму (filmID: {})", userId, filmId);

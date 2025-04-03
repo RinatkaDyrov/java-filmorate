@@ -19,7 +19,7 @@ public class MpaRepository extends BaseRepository<Mpa> {
 
     private static final String INSERT_QUERY = "INSERT INTO rating_mpa(name) VALUES (?)";
     private static final String FIND_ALL_QUERY = "SELECT * FROM rating_mpa";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM rating_mpa r WHERE r.id = ?";
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM rating_mpa WHERE id = ?";
     private static final String FIND_FILMS_BY_RATING_QUERY = "SELECT f.* FROM films f JOIN rating_mpa r ON f.rating_id = r.id WHERE r.name = ?";
 
     public MpaRepository(JdbcTemplate jdbc, RowMapper<Mpa> mapper) {
@@ -31,7 +31,7 @@ public class MpaRepository extends BaseRepository<Mpa> {
     }
 
     public Mpa save(Mpa rating) {
-        int id = (int) insert(INSERT_QUERY, rating.getName());
+        long id = insert(INSERT_QUERY, rating.getName());
         rating.setId(id);
         return rating;
     }
@@ -42,7 +42,8 @@ public class MpaRepository extends BaseRepository<Mpa> {
 
     public Mpa findById(long id) {
         log.info("Ищем рейтинг в репозитории по id {}", id);
-        return findOne(FIND_BY_ID_QUERY, new MpaRowMapper(), id)
+        return findOne(FIND_BY_ID_QUERY, id)
                 .orElseThrow(() -> new NotFoundException("Данного рейтинга нет в списке"));
     }
+
 }

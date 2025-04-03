@@ -29,7 +29,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film findFilmById(long filmId) {
-        return filmRepository.findFilmById(filmId)
+        return filmRepository.getFilmById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с ID " + filmId + " не найден"));
     }
 
@@ -40,7 +40,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film updFilm) {
-        return filmRepository.update(updFilm);
+        return filmRepository.updateFilm(updFilm);
     }
 
     @Override

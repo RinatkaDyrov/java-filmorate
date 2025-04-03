@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class NewFilmRequest {
@@ -19,9 +19,10 @@ public class NewFilmRequest {
     private String name;
     @Size(max = 200, message = "Максимальная длина описания — 200 символов")
     private String description;
+
     private LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
-    private List<Genre> genres;
+    private Set<Genre> genres;
     private Mpa mpa;
 }
