@@ -9,12 +9,11 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
 import java.util.Set;
 
 @Data
 public class UpdateFilmRequest {
+    private long id;
     @NotNull(message = "Необходимо указать название")
     @NotBlank(message = "Название не может быть пустым")
     private String name;
@@ -24,28 +23,29 @@ public class UpdateFilmRequest {
     @Positive(message = "Продолжительность фильма должна быть положительным числом")
     private int duration;
     private Set<Genre> genres;
-    private Mpa rate;
+    private Mpa mpa;
 
     public boolean hasName() {
-        return ! (name == null || name.isBlank());
+        return !(name == null || name.isBlank());
     }
 
     public boolean hasDescription() {
-        return ! (description == null || description.isBlank());
+        return !(description == null || description.isBlank());
     }
 
     public boolean hasReleaseDate() {
-        return ! (releaseDate == null || releaseDate.isAfter(LocalDate.of(1895, Month.DECEMBER, 28)));
+        return !(releaseDate == null);
     }
 
     public boolean hasDuration() {
-        return ! (duration <= 0);
+        return !(duration <= 0);
     }
 
     public boolean hasGenres() {
-        return ! (genres == null || genres.isEmpty());
+        return !(genres == null || genres.isEmpty());
     }
+
     public boolean hasMpa() {
-        return ! (rate == null);
+        return !(mpa == null);
     }
 }

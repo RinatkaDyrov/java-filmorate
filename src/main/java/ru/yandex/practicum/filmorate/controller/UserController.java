@@ -59,7 +59,7 @@ public class UserController {
     @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getFriendsByUserId(@PathVariable long id) {
-        log.info("Запрашиваются друганы айдишки {}",id);
+        log.info("Запрашиваются друганы айдишки {}", id);
         userService.getUserById(id);
         List<UserDto> friends = (List<UserDto>) userService.getFriendByUserId(id);
         if (friends == null || friends.isEmpty()) {
@@ -70,8 +70,8 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<UserDto> getListOfCommonFriends(@PathVariable long id,
-                                                   @PathVariable long friendId) {
+    public Collection<UserDto> getCommonFriends(@PathVariable long id,
+                                                @PathVariable long friendId) {
         return userService.getCommonFriends(id, friendId);
     }
 }

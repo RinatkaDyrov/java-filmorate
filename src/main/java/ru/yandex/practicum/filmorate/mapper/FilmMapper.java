@@ -69,7 +69,7 @@ public class FilmMapper {
             film.setGenres(request.getGenres());
         }
         if (request.hasMpa()) {
-            film.setMpa(request.getRate());
+            film.setMpa(request.getMpa());
         }
         return film;
     }

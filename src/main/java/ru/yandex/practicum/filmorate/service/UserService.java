@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
-import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
@@ -107,12 +105,11 @@ public class UserService {
         } else {
             log.warn("Ошибка при удалении друга. userId: {}, friendId: {}", userId, friendId);
             log.info("Пользователи больше не дружат.(да и не дружили)");
-//            throw new RuntimeException("Не удалось удалить пользователя из друзей.");
         }
     }
 
     public Collection<UserDto> getFriendByUserId(long id) {
-        log.info("Запрашиваются уже у сервиса друганы айдишки {}",id);
+        log.info("Запрашиваются уже у сервиса друганы айдишки {}", id);
         return userStorage.getFriends(id)
                 .stream()
                 .map(UserMapper::mapToUserDto)

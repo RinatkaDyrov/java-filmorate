@@ -1,30 +1,33 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
+import ru.yandex.practicum.filmorate.dal.user.UserRepository;
+import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
-import java.util.List;
 
+@Slf4j
 @Component("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
 
     private final FilmRepository filmRepository;
+    private final UserRepository userRepository;
     private final LikeRepository likeRepository;
 
-    public FilmDbStorage(FilmRepository filmRepository, LikeRepository likeRepository) {
+    public FilmDbStorage(FilmRepository filmRepository, UserRepository userRepository, LikeRepository likeRepository) {
         this.filmRepository = filmRepository;
+        this.userRepository = userRepository;
         this.likeRepository = likeRepository;
     }
 
     @Override
     public Collection<Film> findAll() {
-        Collection<Film> allFilms = filmRepository.findAllFilms();
-        allFilms.forEach(System.out::println);
-        return allFilms;
+        return filmRepository.findAllFilms();
     }
 
     @Override
@@ -40,6 +43,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film updFilm) {
+        log.debug("Обновление фильма в хранилище");
+
         return filmRepository.updateFilm(updFilm);
     }
 
@@ -55,6 +60,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public boolean addLike(long userId, long filmId) {
+        if (userRepository.findUserById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        if (filmRepository.getFilmById(filmId).isEmpty()) {
+            throw new NotFoundException("Фильм не найден");
+        }
+        if (likeRepository.isThisPairExist(userId, filmId)) {
+            throw new ConditionsNotMetException("У вас уже стоит лайк на данном фильме");
+        }
         return likeRepository.addLike(userId, filmId);
     }
 

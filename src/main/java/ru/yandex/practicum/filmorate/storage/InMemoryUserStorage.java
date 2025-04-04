@@ -34,12 +34,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User findUserByEmail(String email) {
-        if (emails.contains(email)){
+        if (emails.contains(email)) {
             return users.values().stream()
                     .filter(user -> user.getEmail().equalsIgnoreCase(email))
                     .findFirst().get();
-        }
-        else {
+        } else {
             throw new NotFoundException("Пользователь с email " + email + " не найден");
         }
     }

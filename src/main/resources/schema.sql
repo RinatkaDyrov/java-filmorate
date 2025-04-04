@@ -19,7 +19,7 @@ create TABLE IF NOT EXISTS rating_mpa (
 );
 
 create TABLE IF NOT EXISTS genre (
-    id INT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50)
 );
 
@@ -29,15 +29,15 @@ create TABLE IF NOT EXISTS films (
     description VARCHAR(200),
     release_date DATE NOT NULL,
     duration INT NOT NULL,
-    genre_id INT,
-    rating_id INT,
+    genre_id BIGINT,
+    rating_id BIGINT,
     FOREIGN KEY (genre_id) REFERENCES genre(id),
     FOREIGN KEY (rating_id) REFERENCES rating_mpa(id)
 );
 
 CREATE TABLE IF NOT EXISTS film_genre (
     film_id BIGINT NOT NULL,
-    genre_id INT NOT NULL,
+    genre_id BIGINT NOT NULL,
     FOREIGN KEY (film_id) REFERENCES films(id),
     FOREIGN KEY (genre_id) REFERENCES genre(id)
 );

@@ -28,10 +28,9 @@ public class FilmRowMapper implements RowMapper<Film> {
 
         film.setDuration(resultSet.getInt("duration"));
 
-        // Обработка жанров
         Mpa mpa = new Mpa();
         mpa.setId(resultSet.getLong("rating_id"));
-        film.setMpa(mpa);// Один рейтинг или null, если нет
+        film.setMpa(mpa);
 
         return film;
     }

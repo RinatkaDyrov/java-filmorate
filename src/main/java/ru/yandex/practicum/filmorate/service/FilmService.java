@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,14 +49,10 @@ public class FilmService {
         if (request.getDescription().isEmpty()) {
             throw new ConditionsNotMetException("Описание фильма должно быть указано");
         }
-        // Преобразуем запрос в объект Film
         Film film = FilmMapper.mapToFilm(request);
-        // Если жанры есть, то передаем их для сохранения
         if (request.getGenres() != null && !request.getGenres().isEmpty()) {
-            // Добавляем жанры в объект Film (сохраняем их в таблице film_genre)
             film.setGenres(request.getGenres());
         }
-        // Сохраняем фильм, включая жанры
         film = filmStorage.create(film);
 
         return FilmMapper.mapToFilmDto(film);
@@ -65,16 +60,18 @@ public class FilmService {
 
 
     public FilmDto updateFilm(long id, UpdateFilmRequest request) {
+        log.info("Обновление фильма в сервисе");
         Film updFilm = filmStorage.findFilmById(id);
         if (updFilm == null) {
+            log.warn("Фильм id {} не найден", id);
             throw new NotFoundException("Фильм с таким id не найден");
         }
 
         updFilm = FilmMapper.updateFilmFields(updFilm, request);
 
-        // Если в запросе есть жанры, обновим их в базе данных
         if (request.hasGenres()) {
-            updFilm.setGenres(request.getGenres());;
+            updFilm.setGenres(request.getGenres());
+            ;
         }
 
         updFilm = filmStorage.update(updFilm);
@@ -86,8 +83,8 @@ public class FilmService {
         log.debug("Пользователь (userID: {}) ставит лайк фильму (filmID: {})", userId, filmId);
 
         boolean success = filmStorage.addLike(userId, filmId);
-        if (success){
-            log.info("Пользователь (userID: {}) поставил лайк фильму (filmID: {})", userId, filmId);
+        if (success) {
+            log.debug("Пользователь (userID: {}) поставил лайк фильму (filmID: {})", userId, filmId);
         } else {
             log.warn("Ошибка при попытке поставить лайк. userId: {}, filmId: {}", userId, filmId);
             throw new RuntimeException("Не удалось поставить лайк.");
@@ -99,8 +96,8 @@ public class FilmService {
         User user = userStorage.findUserById(userId);
         Film film = filmStorage.findFilmById(filmId);
         boolean success = filmStorage.removeLike(userId, filmId);
-        if (success){
-            log.info("Пользователь (userID: {}) удалил лайк у фильма (filmID: {})", userId, filmId);
+        if (success) {
+            log.debug("Пользователь (userID: {}) удалил лайк у фильма (filmID: {})", userId, filmId);
         } else {
             log.warn("Ошибка при удалении лайка. userId: {}, filmId: {}", userId, filmId);
             throw new RuntimeException("Не удалось удалить лайк.");
@@ -110,5 +107,9 @@ public class FilmService {
     public Collection<Film> getPopularFilms(int count) {
         log.debug("Получение списка популярных фильмов");
         return filmStorage.getPopularFilms(count);
+    }
+
+    public FilmDto findFilmById(long id) {
+        return FilmMapper.mapToFilmDto(filmStorage.findFilmById(id));
     }
 }

@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class Like {
-    private long user_id;
-    private long film_id;
+    private long userId;
+    private long filmId;
 }
