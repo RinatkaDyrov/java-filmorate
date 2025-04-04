@@ -30,14 +30,14 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto create(@Valid @RequestBody NewUserRequest userRequest) {
+        log.debug("Добавление нового пользователя");
         return userService.createUser(userRequest);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public UserDto update(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
-
-        log.info("Получен запрос на обновление пользователя ID {}: {}", updateUserRequest.getId(), updateUserRequest);
+        log.debug("Обновление пользователя (Id: {})", updateUserRequest.getId());
         return userService.updateUser(updateUserRequest.getId(), updateUserRequest);
     }
 
@@ -45,6 +45,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public void addFriend(@PathVariable long id,
                           @PathVariable long friendId) {
+        log.debug("Пользователь (Id: {}) добавляет в друзья пользователя (Id: {})", id, friendId);
         userService.addFriend(id, friendId);
     }
 
@@ -52,18 +53,19 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public void deleteFriend(@PathVariable long id,
                              @PathVariable long friendId) {
-        log.info("Удаляем пользователей {}, {} из друзей", id, friendId);
+        log.debug("Пользователь (Id: {}) удаляет пользователя (Id: {}) из друзей", id, friendId);
         userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getFriendsByUserId(@PathVariable long id) {
-        log.info("Запрашиваются друганы айдишки {}", id);
+        log.debug("Запрос на список друзей пользователя (Id: {})", id);
         userService.getUserById(id);
         List<UserDto> friends = (List<UserDto>) userService.getFriendByUserId(id);
         if (friends == null || friends.isEmpty()) {
-            return Collections.emptyList();  // Возвращаем пустой список, если нет друзей
+            log.warn("Пользователь не найден или не имеет друзей");
+            return Collections.emptyList();
         }
         return friends;
     }
@@ -72,6 +74,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getCommonFriends(@PathVariable long id,
                                                 @PathVariable long friendId) {
+        log.debug("Запрос на список общих друзей пользователя (Id: {}) и пользователя (Id: {})", id, friendId);
         return userService.getCommonFriends(id, friendId);
     }
 }

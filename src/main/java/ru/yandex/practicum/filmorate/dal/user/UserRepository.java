@@ -22,7 +22,6 @@ public class UserRepository extends BaseRepository<User> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
     private static final String FIND_BY_EMAIL_QUERY = "SELECT * FROM users WHERE email = ?";
-    private static final String FIND_BY_LOGIN_QUERY = "SELECT * FROM users WHERE login = ?";
     private static final String INSERT_QUERY = "INSERT INTO users(login, name, email, birthday)" +
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
@@ -43,11 +42,8 @@ public class UserRepository extends BaseRepository<User> {
         return findOne(FIND_BY_EMAIL_QUERY, email);
     }
 
-    public Optional<User> findUserByLogin(String login) {
-        return findOne(FIND_BY_LOGIN_QUERY, login);
-    }
-
     public User save(User user) {
+        log.debug("Запрос на добавления пользователя ({}) в базу данных", user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(INSERT_QUERY, Statement.RETURN_GENERATED_KEYS);
@@ -58,13 +54,13 @@ public class UserRepository extends BaseRepository<User> {
             return ps;
         }, keyHolder);
         user.setId(keyHolder.getKey().longValue());
+        log.debug("Пользователь ({}) добавлен в базу данных", user.getId());
         return user;
     }
 
     public User update(User user) {
-        log.info("Обновление пользователя в базе данных: email={}, login={}, name={}, birthday={}, id={}",
+        log.info("Запрос на бновление пользователя в базе данных: email={}, login={}, name={}, birthday={}, id={}",
                 user.getEmail(), user.getLogin(), user.getName(), Date.valueOf(user.getBirthday()), user.getId());
-        log.info("Выполняем запрос: {}", UPDATE_QUERY);
 
         update(UPDATE_QUERY,
                 user.getLogin(),
@@ -72,6 +68,7 @@ public class UserRepository extends BaseRepository<User> {
                 user.getEmail(),
                 Date.valueOf(user.getBirthday()),
                 user.getId());
+        log.debug("Пользователь ({}) обновлен в базе данных", user.getId());
         return user;
     }
 }

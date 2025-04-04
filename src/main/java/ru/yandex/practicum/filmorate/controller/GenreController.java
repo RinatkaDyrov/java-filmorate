@@ -26,7 +26,7 @@ public class GenreController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public GenreDto findByGenreId(@PathVariable long id) {
-        log.info("Ищем жанр по id {}", id);
+        log.info("Поиск жанра по id {}", id);
         return genreService.findByGenreId(id);
     }
 }

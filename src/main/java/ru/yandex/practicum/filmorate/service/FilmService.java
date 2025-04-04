@@ -92,7 +92,7 @@ public class FilmService {
     }
 
     public void deleteLike(long userId, long filmId) {
-
+        log.debug("Удаление");
         User user = userStorage.findUserById(userId);
         Film film = filmStorage.findFilmById(filmId);
         boolean success = filmStorage.removeLike(userId, filmId);

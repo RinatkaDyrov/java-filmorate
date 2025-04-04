@@ -17,6 +17,7 @@ import java.time.Month;
 public class FilmMapper {
 
     public static FilmDto mapToFilmDto(Film film) {
+        log.debug("Конвертируем Film в FilmDto");
         FilmDto dto = new FilmDto();
         dto.setId(film.getId());
         dto.setName(film.getName());
@@ -34,6 +35,7 @@ public class FilmMapper {
     }
 
     public static Film mapToFilm(NewFilmRequest request) {
+        log.info("Конвертируем запрос в Film");
         Film film = new Film();
         film.setName(request.getName());
         film.setDescription(request.getDescription());
@@ -49,6 +51,7 @@ public class FilmMapper {
     }
 
     public static Film updateFilmFields(Film film, UpdateFilmRequest request) {
+        log.debug("Обновление параметров фильма (Id: {})", film.getId());
         if (request.hasName()) {
             film.setName(request.getName());
         }

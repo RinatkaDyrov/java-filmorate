@@ -31,6 +31,7 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
     }
 
     public List<User> findFriendsByUserId(long userId) {
+        log.debug("Запрос всех пользователей из базы данных");
         return jdbc.query(FIND_FRIENDS_BY_USER_QUERY, new UserRowMapper(), userId);
     }
 
@@ -56,15 +57,18 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
     }
 
     public boolean confirmFriendship(long userId, long friendId) {
+        log.debug("Запрос подтверждения дружбы пользователя (Id: {}) и пользователя (Id: {})", userId, friendId);
         int rowsAffected = jdbc.update(UPDATE_QUERY_TO_CONFIRM_FRIEND, userId, friendId);
         return rowsAffected > 0;
     }
 
     public boolean removeFriend(long userId, long friendId) {
+        log.debug("Запрос удаления пользователя (Id: {}) из списка друзей пользователя (Id: {})", friendId, userId);
         return delete(DELETE_QUERY, userId, friendId);
     }
 
     public Collection<User> findCommonFriends(long userId, long friendId) {
+        log.debug("Запрос вывода общих друзей пользователя (Id: {}) и пользователя (Id: {})", userId, friendId);
         return jdbc.query(FIND_COMMON_FRIENDS_QUERY, new UserRowMapper(), userId, friendId);
     }
 }

@@ -17,6 +17,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -58,6 +59,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public Film save(Film film) {
+        log.debug("Добавление фильма {} в репозитории", film);
         long mpaId = film.getMpa().getId();
         Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM rating_mpa WHERE id = ?", Integer.class, mpaId);
         if (count == null || count == 0) {
@@ -81,18 +83,31 @@ public class FilmRepository extends BaseRepository<Film> {
         film.setId(keyHolder.getKey().longValue());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            for (Genre genre : film.getGenres()) {
-                Integer genreCount = jdbc.queryForObject(
-                        "SELECT COUNT(*) FROM genre WHERE id = ?", Integer.class, genre.getId()
-                );
-                if (genreCount == null || genreCount == 0) {
-                    throw new NotFoundException("Genre with ID " + genre.getId() + " wasn't found");
+            List<Long> genreIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .toList();
+
+            String inSql = genreIds.stream()
+                    .map(id -> "?")
+                    .collect(Collectors.joining(", "));
+            List<Long> existingGenreIds = jdbc.queryForList(
+                    "SELECT id FROM genre WHERE id IN (" + inSql + ")",
+                    Long.class,
+                    genreIds.toArray()
+            );
+
+            for (Long genreId : genreIds) {
+                if (!existingGenreIds.contains(genreId)) {
+                    throw new NotFoundException("Genre with ID " + genreId + " wasn't found");
                 }
-                jdbc.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)", film.getId(), genre.getId());
+            }
+
+            for (Long genreId : genreIds) {
+                jdbc.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)", film.getId(), genreId);
             }
         }
         setGenreAndRatingToFilm(film);
-
+        log.debug("Фильм {} был добавлен в базу данных", film);
         return film;
     }
 
@@ -128,7 +143,6 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     private void setGenreAndRatingToFilm(Film film) {
-        // Подтягиваем MPA
         String mpaQuery = "SELECT id, name FROM rating_mpa WHERE id = ?";
         Mpa mpa = jdbc.queryForObject(mpaQuery, (rs, rowNum) -> {
             Mpa mpaObj = new Mpa();
@@ -138,9 +152,10 @@ public class FilmRepository extends BaseRepository<Film> {
         }, film.getMpa().getId());
         film.setMpa(mpa);
 
-        // Подтягиваем жанры
-        String genreQuery = "SELECT g.id, g.name FROM genre g " +
-                "JOIN film_genre fg ON g.id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.id ASC";
+        String genreQuery = """
+                SELECT g.id, g.name FROM genre g JOIN film_genre fg
+                ON g.id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.id ASC
+                """;
         List<Genre> genres = jdbc.query(genreQuery, (rs, rowNum) -> {
             Genre genre = new Genre();
             genre.setId(rs.getInt("id"));

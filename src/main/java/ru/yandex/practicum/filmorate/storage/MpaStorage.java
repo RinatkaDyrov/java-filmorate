@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.rating.MpaRepository;
@@ -9,13 +10,10 @@ import java.util.Collection;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class MpaStorage {
 
     private final MpaRepository mpaRepository;
-
-    public MpaStorage(MpaRepository mpaRepository) {
-        this.mpaRepository = mpaRepository;
-    }
 
     public Collection<Mpa> findAll() {
         return mpaRepository.findAll();
