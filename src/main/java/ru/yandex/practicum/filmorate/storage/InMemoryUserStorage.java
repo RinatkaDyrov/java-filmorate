@@ -33,6 +33,17 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public User findUserByEmail(String email) {
+        if (emails.contains(email)) {
+            return users.values().stream()
+                    .filter(user -> user.getEmail().equalsIgnoreCase(email))
+                    .findFirst().get();
+        } else {
+            throw new NotFoundException("Пользователь с email " + email + " не найден");
+        }
+    }
+
+    @Override
     public User create(User user) {
         log.info("Добавление пользователя {}", user);
         validateUser(user, false);
@@ -64,7 +75,6 @@ public class InMemoryUserStorage implements UserStorage {
         return newUser;
     }
 
-    @Override
     public User updateWithFriendship(User user) {
         users.put(user.getId(), user);
         return user;
