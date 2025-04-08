@@ -30,6 +30,16 @@ public class FilmRepository extends BaseRepository<Film> {
             "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
     private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " +
             "JOIN rating_mpa r ON f.rating_id = r.id WHERE r.name = ?";
+    private static final String COUNT_OF_RATINGS_QUERY = "SELECT COUNT(*) FROM rating_mpa WHERE id = ?";
+    private static final String FIND_GENRES_BY_FILM_QUERY = """
+            SELECT g.id, g.name FROM genre g JOIN film_genre fg
+            ON g.id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.id ASC
+            """;
+    private static final String FIND_MPA_RATINGS_QUERY = "SELECT id, name FROM rating_mpa WHERE id = ?";
+    private static final String INSERT_TO_FILM_GENRES_TABLE_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+    private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
+    private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
+
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -61,7 +71,7 @@ public class FilmRepository extends BaseRepository<Film> {
     public Film save(Film film) {
         log.debug("Добавление фильма {} в репозитории", film);
         long mpaId = film.getMpa().getId();
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM rating_mpa WHERE id = ?", Integer.class, mpaId);
+        Integer count = jdbc.queryForObject(COUNT_OF_RATINGS_QUERY, Integer.class, mpaId);
         if (count == null || count == 0) {
             throw new NotFoundException("MPA with ID " + mpaId + " wasn't found");
         }
@@ -114,13 +124,13 @@ public class FilmRepository extends BaseRepository<Film> {
     public Film updateFilm(Film film) {
         log.debug("Обновление фильма {} в репозитории", film);
 
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM films WHERE id = ?", Integer.class, film.getId());
+        Integer count = jdbc.queryForObject(FILMS_COUNT_QUERY, Integer.class, film.getId());
         if (count == null || count == 0) {
             throw new NotFoundException("Attempt to update non-existing movie with id " + film.getId());
         }
 
         jdbc.update(
-                "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?",
+                UPDATE_FILM_QUERY,
                 film.getName(),
                 film.getDescription(),
                 Date.valueOf(film.getReleaseDate()),
@@ -132,7 +142,7 @@ public class FilmRepository extends BaseRepository<Film> {
         jdbc.update("DELETE FROM film_genre WHERE film_id = ?", film.getId());
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
-                jdbc.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)", film.getId(), genre.getId());
+                jdbc.update(INSERT_TO_FILM_GENRES_TABLE_QUERY, film.getId(), genre.getId());
             }
         }
 
@@ -143,8 +153,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     private void setGenreAndRatingToFilm(Film film) {
-        String mpaQuery = "SELECT id, name FROM rating_mpa WHERE id = ?";
-        Mpa mpa = jdbc.queryForObject(mpaQuery, (rs, rowNum) -> {
+        Mpa mpa = jdbc.queryForObject(FIND_MPA_RATINGS_QUERY, (rs, rowNum) -> {
             Mpa mpaObj = new Mpa();
             mpaObj.setId(rs.getLong("id"));
             mpaObj.setName(rs.getString("name"));
@@ -152,11 +161,7 @@ public class FilmRepository extends BaseRepository<Film> {
         }, film.getMpa().getId());
         film.setMpa(mpa);
 
-        String genreQuery = """
-                SELECT g.id, g.name FROM genre g JOIN film_genre fg
-                ON g.id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.id ASC
-                """;
-        List<Genre> genres = jdbc.query(genreQuery, (rs, rowNum) -> {
+        List<Genre> genres = jdbc.query(FIND_GENRES_BY_FILM_QUERY, (rs, rowNum) -> {
             Genre genre = new Genre();
             genre.setId(rs.getInt("id"));
             genre.setName(rs.getString("name"));

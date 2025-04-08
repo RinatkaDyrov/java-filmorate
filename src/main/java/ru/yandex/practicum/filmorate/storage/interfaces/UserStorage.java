@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.interfaces;
 
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -31,8 +31,6 @@ public interface UserStorage {
     default Collection<User> getCommonFriends(long userId, long friendId) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
-
-    ;
 
     default int getFriendsCount(long userId) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");

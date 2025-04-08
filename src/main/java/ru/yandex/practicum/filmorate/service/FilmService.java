@@ -13,8 +13,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -25,14 +25,12 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final LikeRepository likeRepository;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage, LikeRepository likeRepository) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.likeRepository = likeRepository;
     }
 
     public Collection<FilmDto> getAllFilms() {
@@ -71,7 +69,6 @@ public class FilmService {
 
         if (request.hasGenres()) {
             updFilm.setGenres(request.getGenres());
-            ;
         }
 
         updFilm = filmStorage.update(updFilm);

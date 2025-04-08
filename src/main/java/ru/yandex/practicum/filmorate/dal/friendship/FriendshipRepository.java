@@ -21,9 +21,13 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
     private static final String INSERT_QUERY_FOR_ADD_FRIEND = "INSERT INTO friendship (user_id, friend_id, confirm_status) VALUES (?, ?, FALSE)";
     private static final String UPDATE_QUERY_TO_CONFIRM_FRIEND = "INSERT INTO friendship (user_id, friend_id, confirm_status) VALUES (?, ?, TRUE)";
     private static final String DELETE_QUERY = "DELETE FROM friendship WHERE (user_id = ? AND friend_id = ?)";
-    private static final String FIND_COMMON_FRIENDS_QUERY = "SELECT u.* " +
-            "FROM friendship f1 JOIN friendship f2 ON f1.friend_id = f2.friend_id JOIN users u ON u.id = f1.friend_id " +
-            "WHERE f1.user_id = ? AND f2.user_id = ?";
+    private static final String FIND_COMMON_FRIENDS_QUERY = """
+            SELECT u.* FROM friendship f1
+            JOIN friendship f2 ON f1.friend_id = f2.friend_id
+            JOIN users u ON u.id = f1.friend_id
+            WHERE f1.user_id = ? AND f2.user_id = ?
+            """;
+    private static final String FRIENDSHIP_CHECK_QUERY = "SELECT * FROM friendship WHERE user_id = ? AND friend_id = ? AND confirm_status = TRUE";
 
 
     public FriendshipRepository(JdbcTemplate jdbc, RowMapper<Friendship> mapper) {
@@ -42,8 +46,7 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
     public boolean addFriendRequest(long userId, long friendId) {
         log.debug("Добавляем в друзья {} и {}", userId, friendId);
         try {
-            String checkQuery = "SELECT * FROM friendship WHERE user_id = ? AND friend_id = ? AND confirm_status = TRUE";
-            List<Map<String, Object>> result = jdbc.queryForList(checkQuery, friendId, userId);
+            List<Map<String, Object>> result = jdbc.queryForList(FRIENDSHIP_CHECK_QUERY, friendId, userId);
 
             if (!result.isEmpty()) {
                 return true;
