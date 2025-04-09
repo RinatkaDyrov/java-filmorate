@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dal.film.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 
+import java.time.LocalDate;
 import java.util.Collection;
 
 @Slf4j
@@ -20,6 +21,18 @@ public class LikeRepository extends BaseRepository<Like> {
     private static final String FIND_POPULAR_FILMS_QUERY = """
             SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id, COUNT(fl.user_id) AS likes
             FROM films f LEFT JOIN likes fl ON f.id = fl.film_id GROUP BY f.id ORDER BY likes DESC, f.id ASC LIMIT ?""";
+    private static final String FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY = """
+            SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id, COUNT(fl.user_id) AS likes
+            FROM films f LEFT JOIN likes fl ON f.id = fl.film_id LEFT JOIN film_genre AS fg ON fg.film_id = f.id WHERE f.release_date >= ? AND f.release_date <= ? AND fg.genre_id = ?
+            GROUP BY f.id ORDER BY likes DESC, f.id ASC LIMIT ?""";
+    private static final String FIND_POPULAR_FILMS_BY_YEAR_QUERY = """
+            SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id, COUNT(fl.user_id) AS likes
+            FROM films f LEFT JOIN likes fl ON f.id = fl.film_id LEFT JOIN film_genre AS fg ON fg.film_id = f.id WHERE f.release_date >= ? AND f.release_date <= ?
+            GROUP BY f.id ORDER BY likes DESC, f.id ASC LIMIT ?""";
+    private static final String FIND_POPULAR_FILMS_BY_GENRE_QUERY = """
+            SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id, COUNT(fl.user_id) AS likes
+            FROM films f LEFT JOIN likes fl ON f.id = fl.film_id LEFT JOIN film_genre AS fg ON fg.film_id = f.id WHERE fg.genre_id = ?
+            GROUP BY f.id ORDER BY likes DESC, f.id ASC LIMIT ?""";
 
     public LikeRepository(JdbcTemplate jdbc, RowMapper<Like> mapper) {
         super(jdbc, mapper);
@@ -45,6 +58,17 @@ public class LikeRepository extends BaseRepository<Like> {
     public Collection<Film> findPopularFilms(int count) {
         log.debug("Запрос на список {} популярных фильмов", count);
         return jdbc.query(FIND_POPULAR_FILMS_QUERY, new FilmRowMapper(), count);
+    }
+
+    public Collection<Film> findPopularFilms(int count, int genreId, int year) {
+        log.debug("Запрос на список {} популярных фильмов", count);
+        if (genreId == -1) {
+            return jdbc.query(FIND_POPULAR_FILMS_BY_YEAR_QUERY, new FilmRowMapper(), String.valueOf(LocalDate.of(year, 1, 1)), String.valueOf(LocalDate.of(year, 12, 31)), count);
+        } else if (year == -1) {
+            return jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_QUERY, new FilmRowMapper(), genreId, count);
+        } else {
+            return jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY, new FilmRowMapper(), String.valueOf(LocalDate.of(year, 1, 1)), String.valueOf(LocalDate.of(year, 12, 31)), genreId, count);
+        }
     }
 
     public boolean isThisPairExist(long userId, long filmId) {

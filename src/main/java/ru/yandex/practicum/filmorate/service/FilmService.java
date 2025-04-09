@@ -106,6 +106,14 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    public Collection<Film> getPopularFilms(int count, int genreId, int year) {
+        log.debug("Получение списка популярных фильмов");
+        if (genreId == -1 && year == -1) {
+            return filmStorage.getPopularFilms(count);
+        }
+        return filmStorage.getPopularFilms(count, genreId, year);
+    }
+
     public FilmDto findFilmById(long id) {
         return FilmMapper.mapToFilmDto(filmStorage.findFilmById(id));
     }
