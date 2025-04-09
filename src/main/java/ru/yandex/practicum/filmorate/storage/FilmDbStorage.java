@@ -93,6 +93,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> getPopularFilms(int count, int genreId, int year) {
+        log.debug("Запрос популярных фильмов в хранилище");
+        return likeRepository.findPopularFilms(count, genreId, year);
+    }
+
+    @Override
     public Collection<Film> searchFilmsByTitle(String query) {
         log.debug("Поиск фильмов по названию в хранилище");
         return filmRepository.searchFilmsByTitle(query);
