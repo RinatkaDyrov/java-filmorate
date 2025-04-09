@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -69,5 +70,12 @@ public class FilmController {
     public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         log.debug("Получаем список {} популярных фильмов", count);
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> searchFilms(@RequestParam String query, @RequestParam List<String> by) {
+        log.debug("Поиск фильмов по запросу", query, by);
+        return filmService.searchFilms(query, by);
     }
 }

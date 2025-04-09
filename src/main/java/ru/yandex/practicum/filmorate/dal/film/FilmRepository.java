@@ -39,7 +39,8 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String INSERT_TO_FILM_GENRES_TABLE_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
     private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
-
+private static final String FIND_FILM_ID_BY_NAME_QUERY = "SELECT id FROM films WHERE LOWER(name) LIKE LOWER(?)";
+    private static final String FIND_FILM_ID_BY_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN directors AS d ON f.director_id = d.id WHERE LOWER(d.name) LIKE LOWER(?)";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -170,4 +171,23 @@ public class FilmRepository extends BaseRepository<Film> {
         film.setGenres(new LinkedHashSet<>(genres));
     }
 
+    public Collection<Film> searchFilmsByTitle(String query) {
+        List<Long> filmsId = jdbc.queryForList(FIND_FILM_ID_BY_NAME_QUERY, Long.class, query);
+        return getFilmsById(filmsId);
+    }
+
+    public Collection<Film> searchFilmsByDirector(String query) {
+        List<Long> filmsId = jdbc.queryForList(FIND_FILM_ID_BY_DIRECTOR_QUERY, Long.class, query);
+        return getFilmsById(filmsId);
+    }
+
+    private Collection<Film> getFilmsById(List<Long> filmsId) {
+        List<Film> films = new ArrayList<>();
+        for (Long id : filmsId) {
+            Optional<Film> optionalFilm = getFilmById(id);
+            optionalFilm.ifPresent(films::add);
+        }
+        films.sort((f1, f2) -> f1.getLikes().size() - f2.getLikes().size());
+        return films;
+    }
 }

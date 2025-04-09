@@ -10,13 +10,14 @@ import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.UnclassifiedException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
-import java.util.Collection;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -108,5 +109,33 @@ public class FilmService {
 
     public FilmDto findFilmById(long id) {
         return FilmMapper.mapToFilmDto(filmStorage.findFilmById(id));
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        query = query.trim();
+        query = "%" + query + "%";
+        System.out.println(query);
+        if (by.size() == 2) {
+            log.debug("Получение списка фильмов по названию и режиссеру");
+            Collection<Film> filmsByTitle = filmStorage.searchFilmsByTitle(query);
+            Collection<Film> filmsByDirector = filmStorage.searchFilmsByDirector(query);
+            Set<Film> films = new HashSet<>();
+            films.addAll(filmsByTitle);
+            films.addAll(filmsByDirector);
+            return films;
+        } else if (by.isEmpty()) {
+            throw new UnclassifiedException("Не переданы параметры для поиска");
+        } else {
+            switch (by.get(0)) {
+                case "title":
+                    log.debug("Получение списка фильмов по названию");
+                    return filmStorage.searchFilmsByTitle(query);
+                case "director":
+                    log.debug("Получение списка фильмов по режиссеру");
+                    return filmStorage.searchFilmsByDirector(query);
+                default:
+                    throw new UnclassifiedException("Поиск по этому параметру не реализован");
+            }
+        }
     }
 }
