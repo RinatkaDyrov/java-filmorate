@@ -68,8 +68,6 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count, @RequestParam(defaultValue = "-1") int genreId, @RequestParam(defaultValue = "-1") int year) {
         log.debug("Получаем список {} популярных фильмов", count);
-        System.out.println(genreId);
-        System.out.println(year);
         return filmService.getPopularFilms(count, genreId, year);
     }
 }
