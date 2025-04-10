@@ -23,7 +23,7 @@ public interface FilmStorage {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
 
-    default List<Film> getCommonFilms(Long userId, Long friendId){
+    default List<Film> getCommonFilms(Long userId, Long friendId) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
 
