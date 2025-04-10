@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Component("filmDbStorage")
@@ -96,5 +97,11 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getPopularFilms(int count, int genreId, int year) {
         log.debug("Запрос популярных фильмов в хранилище");
         return likeRepository.findPopularFilms(count, genreId, year);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        log.info("Запрос общих фильмов");
+        return filmRepository.getCommonFilms(userId, friendId);
     }
 }
