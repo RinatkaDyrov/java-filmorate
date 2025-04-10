@@ -74,7 +74,7 @@ public class FilmController {
 
     @GetMapping("/common")
     @ResponseStatus(HttpStatus.OK)
-    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId){
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
         log.debug("Пользователь - {} получает общие фильмы с Пользователем - {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
