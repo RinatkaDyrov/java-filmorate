@@ -40,14 +40,14 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
     private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
     private static final String GET_COMMON_FILMS = """
-                                                       SELECT f.*,
-                                                              COUNT(l.film_id) AS like_count
-                                                       FROM films f
-                                                       LEFT JOIN likes l ON f.id = l.film_id AND l.user_id IN (?, ?)
-                                                       GROUP BY f.id
-                                                       HAVING COUNT(DISTINCT l.user_id) = 2
-                                                       ORDER BY like_count DESC
-                                                   """;
+                                               SELECT f.*,
+                                                      COUNT(l.film_id) AS like_count
+                                               FROM films f
+                                               LEFT JOIN likes l ON f.id = l.film_id AND l.user_id IN (?, ?)
+                                               GROUP BY f.id
+                                               HAVING COUNT(DISTINCT l.user_id) = 2
+                                               ORDER BY like_count DESC
+                                               """;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
