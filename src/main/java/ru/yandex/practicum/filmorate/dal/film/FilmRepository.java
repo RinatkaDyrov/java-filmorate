@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -16,6 +17,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,7 +27,7 @@ public class FilmRepository extends BaseRepository<Film> {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT id, name, description, release_date, duration, rating_id FROM films WHERE id=?";
-    private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating_id) VALUES (?, ?, ?, ?, ?)";
+    private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating_id, director_id) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String FIND_BY_GENRE_QUERY = "SELECT f.* FROM films f " +
             "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
     private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " +
@@ -39,6 +41,10 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String INSERT_TO_FILM_GENRES_TABLE_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
     private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
+    private static final String FIND_DIRECTOR_BY_FILM_ID_QUERY = """
+            SELECT d.id, d.name FROM films f LEFT JOIN directors d
+            ON d.id = f.director_id WHERE f.id = ?
+            """;
 
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -53,6 +59,7 @@ public class FilmRepository extends BaseRepository<Film> {
         try {
             Optional<Film> thisFilm = findOne(FIND_BY_ID_QUERY, id);
             thisFilm.ifPresent(this::setGenreAndRatingToFilm);
+            thisFilm.ifPresent(this::setDirectorToFilm);
             return thisFilm;
         } catch (EmptyResultDataAccessException e) {
             log.warn("No film found with id {}", id);
@@ -71,6 +78,7 @@ public class FilmRepository extends BaseRepository<Film> {
     public Film save(Film film) {
         log.debug("Добавление фильма {} в репозитории", film);
         long mpaId = film.getMpa().getId();
+        Long directorId = film.getDirector() == null ? null : film.getDirector().getId();
         Integer count = jdbc.queryForObject(COUNT_OF_RATINGS_QUERY, Integer.class, mpaId);
         if (count == null || count == 0) {
             throw new NotFoundException("MPA with ID " + mpaId + " wasn't found");
@@ -87,6 +95,11 @@ public class FilmRepository extends BaseRepository<Film> {
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
             ps.setLong(5, mpaId);
+            if (directorId == null) {
+                ps.setNull(6, Types.BIGINT);
+            } else {
+                ps.setLong(6, directorId);
+            }
             return ps;
         }, keyHolder);
 
@@ -117,6 +130,7 @@ public class FilmRepository extends BaseRepository<Film> {
             }
         }
         setGenreAndRatingToFilm(film);
+        setDirectorToFilm(film);
         log.debug("Фильм {} был добавлен в базу данных", film);
         return film;
     }
@@ -147,6 +161,7 @@ public class FilmRepository extends BaseRepository<Film> {
         }
 
         setGenreAndRatingToFilm(film);
+        setDirectorToFilm(film);
 
         log.debug("Фильм {} был обновлен в базе данных", film);
         return film;
@@ -169,5 +184,23 @@ public class FilmRepository extends BaseRepository<Film> {
         }, film.getId());
         film.setGenres(new LinkedHashSet<>(genres));
     }
+    
+    private void setDirectorToFilm(Film film) {
+        Director director = jdbc.query(FIND_DIRECTOR_BY_FILM_ID_QUERY, (rs, rowNum) -> {
+                    long id = rs.getLong("id");
+                    Director dir = new Director();
+                    if (rs.wasNull()) {
+                        log.warn("Режиссер не задан");
+                        return dir;
+                    }
+                    dir.setId(id);
+                    dir.setName(rs.getString("name"));
+                    return dir;
+                }, film.getId()).stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(new Director());
 
+        film.setDirector(director);
+    }
 }

@@ -15,6 +15,4 @@ public class UserDto {
     private String login;
     private String name;
     private LocalDate birthday;
-    private Genre genre;
-    private Mpa rating;
 }
