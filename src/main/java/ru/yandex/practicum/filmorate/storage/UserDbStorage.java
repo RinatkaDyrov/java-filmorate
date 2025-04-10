@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
@@ -18,6 +19,7 @@ public class UserDbStorage implements UserStorage {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public Collection<User> findAll() {
@@ -101,5 +103,18 @@ public class UserDbStorage implements UserStorage {
     public Collection<User> getCommonFriends(long userId, long friendId) {
         log.debug("Запрос списка общих друзей пользователей в хранилище");
         return friendshipRepository.findCommonFriends(userId, friendId);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count != null && count > 0;
     }
 }

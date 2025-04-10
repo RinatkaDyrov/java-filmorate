@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.time.LocalDate;
@@ -81,5 +82,19 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
+    }
+    @Override
+    public boolean existsById(Long id) {
+        return films.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        if (!films.containsKey(id)) {
+            log.warn("Попытка удалить пользователя с несуществующим ID: {}", id);
+            throw new NotFoundException("Пользователь с ID " + id + " не найден");
+        }
+        films.remove(id);
+        log.info("Фильм с ID {} удалён", id);
     }
 }

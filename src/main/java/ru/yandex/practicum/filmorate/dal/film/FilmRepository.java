@@ -39,7 +39,7 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String INSERT_TO_FILM_GENRES_TABLE_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
     private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
-
+    private static final String DELETE_QUERY = "DELETE FROM film WHERE id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -168,6 +168,10 @@ public class FilmRepository extends BaseRepository<Film> {
             return genre;
         }, film.getId());
         film.setGenres(new LinkedHashSet<>(genres));
+    }
+
+    public boolean delete(Long id) {
+        return delete(DELETE_QUERY, id);
     }
 
 }

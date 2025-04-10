@@ -37,4 +37,10 @@ public interface FilmStorage {
     default Collection<Film> getPopularFilms(int count) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
+
+    default Collection<Film> getPopularFilms(int count, int genreId, int year) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
+    void deleteById(Long id);
+    boolean existsById(Long id);
 }
