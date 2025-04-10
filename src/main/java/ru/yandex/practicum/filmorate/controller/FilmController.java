@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -69,5 +70,12 @@ public class FilmController {
     public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count, @RequestParam(defaultValue = "-1") int genreId, @RequestParam(defaultValue = "-1") int year) {
         log.debug("Получаем список {} популярных фильмов", count);
         return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/common")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId){
+        log.debug("Пользователь - {} получает общие фильмы с Пользователем - {}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }

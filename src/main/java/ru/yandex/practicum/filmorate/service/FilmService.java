@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -55,7 +56,6 @@ public class FilmService {
 
         return FilmMapper.mapToFilmDto(film);
     }
-
 
     public FilmDto updateFilm(long id, UpdateFilmRequest request) {
         log.info("Обновление фильма в сервисе");
@@ -112,6 +112,14 @@ public class FilmService {
             return filmStorage.getPopularFilms(count);
         }
         return filmStorage.getPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        log.info("Получение общих фильмов");
+        if (userId == null || userId <= 0 && friendId == null || friendId <= 0) {
+            throw new IllegalArgumentException("Некорректные идентификаторы пользователей.");
+        }
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     public FilmDto findFilmById(long id) {

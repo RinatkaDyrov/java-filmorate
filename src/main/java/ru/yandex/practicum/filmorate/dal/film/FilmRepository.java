@@ -39,7 +39,15 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String INSERT_TO_FILM_GENRES_TABLE_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
     private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
-
+    private static final String GET_COMMON_FILMS = """
+                                                       SELECT f.*,
+                                                              COUNT(l.film_id) AS like_count
+                                                       FROM films f
+                                                       LEFT JOIN likes l ON f.id = l.film_id AND l.user_id IN (?, ?)
+                                                       GROUP BY f.id
+                                                       HAVING COUNT(DISTINCT l.user_id) = 2
+                                                       ORDER BY like_count DESC
+                                                   """;
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -170,4 +178,16 @@ public class FilmRepository extends BaseRepository<Film> {
         film.setGenres(new LinkedHashSet<>(genres));
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = findMany(GET_COMMON_FILMS, userId, friendId);
+
+        for (Film film : commonFilms) {
+            Optional<Film> filmWithDetails = getFilmById(film.getId());
+            filmWithDetails.ifPresent(updatedFilm -> {
+                film.setGenres(updatedFilm.getGenres());
+            });
+        }
+
+        return commonFilms;
+    }
 }
