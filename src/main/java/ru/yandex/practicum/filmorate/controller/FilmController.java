@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
@@ -69,5 +70,11 @@ public class FilmController {
     public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count, @RequestParam(defaultValue = "-1") int genreId, @RequestParam(defaultValue = "-1") int year) {
         log.debug("Получаем список {} популярных фильмов", count);
         return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @DeleteMapping("/films/{id}")
+    public ResponseEntity<Void> deleteFilm(@PathVariable Long id) {
+        filmService.deleteFilmById(id);
+        return ResponseEntity.noContent().build();
     }
 }

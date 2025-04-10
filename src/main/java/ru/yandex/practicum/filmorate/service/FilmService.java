@@ -117,4 +117,11 @@ public class FilmService {
     public FilmDto findFilmById(long id) {
         return FilmMapper.mapToFilmDto(filmStorage.findFilmById(id));
     }
+
+    public void deleteFilmById(Long id) {
+        if (!filmStorage.existsById(id)) {
+            throw new NotFoundException("Film with id " + id + " not found");
+        }
+        filmStorage.deleteById(id);
+    }
 }

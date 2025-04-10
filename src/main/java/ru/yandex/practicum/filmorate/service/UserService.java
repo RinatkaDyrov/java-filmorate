@@ -122,4 +122,11 @@ public class UserService {
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
+
+    public void deleteUserById(Long id) {
+        if (!userStorage.existsById(id)) {
+            throw new NotFoundException("User with id " + id + " not found");
+        }
+        userStorage.deleteById(id);
+    }
 }

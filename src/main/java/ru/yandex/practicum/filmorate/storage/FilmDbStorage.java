@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dal.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
@@ -21,6 +22,7 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final JdbcTemplate jdbcTemplate;
 
 
     @Override
@@ -97,4 +99,18 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Запрос популярных фильмов в хранилище");
         return likeRepository.findPopularFilms(count, genreId, year);
     }
+
+    @Override
+    public void deleteById(Long id) {
+        String sql = "DELETE FROM films WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sql = "SELECT COUNT(*) FROM films WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count != null && count > 0;
+    }
+
 }
