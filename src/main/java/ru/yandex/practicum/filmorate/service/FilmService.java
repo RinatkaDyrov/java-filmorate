@@ -115,7 +115,7 @@ public class FilmService {
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        log.info("Получение общих фильмов");
+        log.info("Получение общих фильмов пользователей");
         if (userId == null || userId <= 0 && friendId == null || friendId <= 0) {
             throw new IllegalArgumentException("Некорректные идентификаторы пользователей.");
         }
