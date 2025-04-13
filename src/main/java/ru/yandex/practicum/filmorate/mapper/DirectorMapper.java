@@ -30,7 +30,7 @@ public class DirectorMapper {
 
 
     public static Director updateDirectorFields(Director updDirector, UpdateDirectorRequest request) {
-        if (request.hasName()){
+        if (request.hasName()) {
             updDirector.setName(request.getName());
         }
         return updDirector;

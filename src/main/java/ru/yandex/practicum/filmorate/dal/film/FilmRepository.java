@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,7 @@ public class FilmRepository extends BaseRepository<Film> {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT id, name, description, release_date, duration, rating_id FROM films WHERE id=?";
-    private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating_id, director_id) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating_id) VALUES (?, ?, ?, ?, ?)";
     private static final String FIND_BY_GENRE_QUERY = "SELECT f.* FROM films f " +
             "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
     private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " +
@@ -38,14 +37,35 @@ public class FilmRepository extends BaseRepository<Film> {
             ON g.id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.id ASC
             """;
     private static final String FIND_MPA_RATINGS_QUERY = "SELECT id, name FROM rating_mpa WHERE id = ?";
+    private static final String FIND_DIRECTORS_QUERY = """
+            SELECT d.* FROM directors d
+            JOIN film_directors fd ON fd.director_id = d.id
+            WHERE fd.film_id = ?;
+            """;
     private static final String INSERT_TO_FILM_GENRES_TABLE_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+    private static final String INSERT_TO_FILM_DIRECTORS_TABLE_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
     private static final String UPDATE_FILM_QUERY = "UPDATE films SET name=?, description=?, release_date=?, duration=?, rating_id=? WHERE id=?";
     private static final String FILMS_COUNT_QUERY = "SELECT COUNT(*) FROM films WHERE id = ?";
-    private static final String FIND_DIRECTOR_BY_FILM_ID_QUERY = """
-            SELECT d.id, d.name FROM films f LEFT JOIN directors d
-            ON d.id = f.director_id WHERE f.id = ?
+    private static final String GET_COMMON_FILMS = """
+            SELECT f.*,
+                   COUNT(l.film_id) AS like_count
+            FROM films f
+            LEFT JOIN likes l ON f.id = l.film_id AND l.user_id IN (?, ?)
+            GROUP BY f.id
+            HAVING COUNT(DISTINCT l.user_id) = 2
+            ORDER BY like_count DESC
             """;
-
+    private static final String FIND_SORTED_FILMS_BY_DIRECTORS_ID = """
+                SELECT f.*, COUNT(l.film_id) AS like_count
+                FROM films f
+                JOIN film_directors fd ON f.id = fd.film_id
+                LEFT JOIN likes l ON f.id = l.film_id
+                WHERE fd.director_id = ?
+                GROUP BY f.id, f.name, f.release_date, f.duration, f.description, f.rating_id
+            """;
+    private static final String FIND_FILMS_BY_DIRECTORS_ID = """
+            SELECT * FROM films
+            WHERE director_id = ?""";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -78,7 +98,7 @@ public class FilmRepository extends BaseRepository<Film> {
     public Film save(Film film) {
         log.debug("Добавление фильма {} в репозитории", film);
         long mpaId = film.getMpa().getId();
-        Long directorId = film.getDirector() == null ? null : film.getDirector().getId();
+
         Integer count = jdbc.queryForObject(COUNT_OF_RATINGS_QUERY, Integer.class, mpaId);
         if (count == null || count == 0) {
             throw new NotFoundException("MPA with ID " + mpaId + " wasn't found");
@@ -95,11 +115,6 @@ public class FilmRepository extends BaseRepository<Film> {
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
             ps.setLong(5, mpaId);
-            if (directorId == null) {
-                ps.setNull(6, Types.BIGINT);
-            } else {
-                ps.setLong(6, directorId);
-            }
             return ps;
         }, keyHolder);
 
@@ -127,6 +142,17 @@ public class FilmRepository extends BaseRepository<Film> {
 
             for (Long genreId : genreIds) {
                 jdbc.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)", film.getId(), genreId);
+            }
+        }
+
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (Director director : film.getDirectors()) {
+                String directorCheckQuery = "SELECT COUNT(*) FROM directors WHERE id = ?";
+                Integer directorCount = jdbc.queryForObject(directorCheckQuery, Integer.class, director.getId());
+                if (directorCount == null || directorCount == 0) {
+                    throw new NotFoundException("Director with ID " + director.getId() + " wasn't found");
+                }
+                jdbc.update("INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)", film.getId(), director.getId());
             }
         }
         setGenreAndRatingToFilm(film);
@@ -160,6 +186,13 @@ public class FilmRepository extends BaseRepository<Film> {
             }
         }
 
+        jdbc.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (Director director : film.getDirectors()) {
+                jdbc.update(INSERT_TO_FILM_DIRECTORS_TABLE_QUERY, film.getId(), director.getId());
+            }
+        }
+
         setGenreAndRatingToFilm(film);
         setDirectorToFilm(film);
 
@@ -184,23 +217,70 @@ public class FilmRepository extends BaseRepository<Film> {
         }, film.getId());
         film.setGenres(new LinkedHashSet<>(genres));
     }
-    
-    private void setDirectorToFilm(Film film) {
-        Director director = jdbc.query(FIND_DIRECTOR_BY_FILM_ID_QUERY, (rs, rowNum) -> {
-                    long id = rs.getLong("id");
-                    Director dir = new Director();
-                    if (rs.wasNull()) {
-                        log.warn("Режиссер не задан");
-                        return dir;
-                    }
-                    dir.setId(id);
-                    dir.setName(rs.getString("name"));
-                    return dir;
-                }, film.getId()).stream()
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(new Director());
 
-        film.setDirector(director);
+    private void setDirectorToFilm(Film film) {
+        List<Director> directors = jdbc.query(
+                FIND_DIRECTORS_QUERY,
+                (rs, rowNum) -> {
+                    Director director = new Director();
+                    director.setId(rs.getLong("id"));
+                    director.setName(rs.getString("name"));
+                    return director;
+                },
+                film.getId()
+        );
+        film.setDirectors(directors);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        List<Film> commonFilms = findMany(GET_COMMON_FILMS, userId, friendId);
+
+        for (Film film : commonFilms) {
+            Optional<Film> filmWithDetails = getFilmById(film.getId());
+            filmWithDetails.ifPresent(updatedFilm -> film.setGenres(updatedFilm.getGenres()));
+        }
+
+        return commonFilms;
+    }
+
+    public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
+        Collection<Film> films;
+
+        if (isValidSortParams(sortParams)) {
+            String query = FIND_SORTED_FILMS_BY_DIRECTORS_ID + " ORDER BY " + setOrderBy(sortParams);
+            films = findMany(query, directorId);
+        } else {
+            films = findMany(FIND_FILMS_BY_DIRECTORS_ID, directorId);
+        }
+
+        for (Film film : films) {
+            setDirectorToFilm(film);
+        }
+
+        return films;
+    }
+
+    private String setOrderBy(String[] sortParams) {
+        List<String> sortClauses = new ArrayList<>();
+
+        for (String param : sortParams) {
+            switch (param) {
+                case "year" -> sortClauses.add("YEAR(f.release_date) ASC");
+                case "likes" -> sortClauses.add("like_count DESC");
+            }
+        }
+
+        return String.join(", ", sortClauses);
+    }
+
+    private boolean isValidSortParams(String[] sortParams) {
+        Set<String> validParams = Set.of("year", "likes");
+
+        for (String param : sortParams) {
+            if (!validParams.contains(param)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

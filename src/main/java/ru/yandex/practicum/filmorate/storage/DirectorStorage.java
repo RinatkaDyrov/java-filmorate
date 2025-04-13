@@ -24,7 +24,7 @@ public class DirectorStorage {
     public Director findById(long id) {
         log.debug("Поиск режиссера (ID: {}) в хранилище", id);
         return directorRepository.findDirectorById(id)
-                .orElseThrow(() -> new NotFoundException("Режиссер с ID: " + id + " не найден"))    ;
+                .orElseThrow(() -> new NotFoundException("Режиссер с ID: " + id + " не найден"));
     }
 
     public Director create(Director director) {

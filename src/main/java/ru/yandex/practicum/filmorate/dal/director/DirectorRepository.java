@@ -4,24 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.Collection;
 import java.util.Optional;
 
 @Slf4j
 @Repository
 public class DirectorRepository extends BaseRepository<Director> {
-    private static final String FIND_ALL_DIRECTORS_QUERY = "SELECT * FROM directors";
+    private static final String FIND_ALL_DIRECTORS_QUERY = "SELECT * FROM directors ORDER BY id ASC";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM directors WHERE id = ?";
     private static final String INSERT_QUERY = "INSERT INTO directors (name) VALUES (?)";
     private static final String UPDATE_QUERY = "UPDATE directors SET name = ? WHERE id = ?";
@@ -54,7 +48,7 @@ public class DirectorRepository extends BaseRepository<Director> {
 
     public Director updateDirector(Director updDirector) {
         log.debug("Запрос на обновление режиссера ({}) в базе данных", updDirector);
-        update(UPDATE_QUERY, updDirector.getName());
+        update(UPDATE_QUERY, updDirector.getName(), updDirector.getId());
         return updDirector;
     }
 

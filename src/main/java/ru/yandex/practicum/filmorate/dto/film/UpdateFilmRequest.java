@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -25,7 +26,7 @@ public class UpdateFilmRequest {
     private int duration;
     private Set<Genre> genres;
     private Mpa mpa;
-    private Director director;
+    private List<Director> directors;
 
     public boolean hasName() {
         return !(name == null || name.isBlank());
@@ -51,7 +52,7 @@ public class UpdateFilmRequest {
         return !(mpa == null);
     }
 
-    public boolean hasDirector() {
-        return !(director == null);
+    public boolean hasDirectors() {
+        return !(directors == null || directors.isEmpty());
     }
 }
