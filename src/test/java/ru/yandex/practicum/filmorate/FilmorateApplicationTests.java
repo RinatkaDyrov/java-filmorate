@@ -24,6 +24,9 @@ class FilmorateApplicationTests {
 
     @Autowired
     private ReviewService reviewService;
+  
+    @Autowired
+    private DirectorService directorService;
 
     @Test
     void contextLoads() {
@@ -32,6 +35,6 @@ class FilmorateApplicationTests {
         assertNotNull(mpaService);
         assertNotNull(genreService);
         assertNotNull(reviewService);
+        assertNotNull(directorService);
     }
-
 }

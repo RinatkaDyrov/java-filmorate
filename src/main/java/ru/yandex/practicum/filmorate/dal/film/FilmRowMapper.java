@@ -33,6 +33,10 @@ public class FilmRowMapper implements RowMapper<Film>, Serializable {
         mpa.setId(resultSet.getLong("rating_id"));
         film.setMpa(mpa);
 
+//        Director director = new Director();
+//        director.setId(resultSet.getLong("director_id"));
+//        film.setDirector(director);
+
         return film;
     }
 
