@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.GenreService;
-import ru.yandex.practicum.filmorate.service.MpaService;
-import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.*;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -25,12 +22,15 @@ class FilmorateApplicationTests {
     @Autowired
     private GenreService genreService;
 
+    @Autowired
+    private DirectorService directorService;
+
     @Test
     void contextLoads() {
         assertNotNull(userService);
         assertNotNull(filmService);
         assertNotNull(mpaService);
         assertNotNull(genreService);
+        assertNotNull(directorService);
     }
-
 }
