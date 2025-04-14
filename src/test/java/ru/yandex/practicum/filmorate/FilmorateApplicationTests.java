@@ -24,7 +24,7 @@ class FilmorateApplicationTests {
 
     @Autowired
     private ReviewService reviewService;
-  
+
     @Autowired
     private DirectorService directorService;
 
