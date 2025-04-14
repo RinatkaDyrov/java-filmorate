@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
@@ -76,5 +77,11 @@ public class UserController {
                                                 @PathVariable long friendId) {
         log.debug("Запрос на список общих друзей пользователя (Id: {}) и пользователя (Id: {})", id, friendId);
         return userService.getCommonFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<FilmDto> getRecommendations(@PathVariable Long id) {
+        log.debug("Запрос на список рекомендаций для пользователя (Id: {})", id);
+        return userService.getRecommendations(id);
     }
 }

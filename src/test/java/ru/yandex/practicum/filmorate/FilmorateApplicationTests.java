@@ -23,6 +23,9 @@ class FilmorateApplicationTests {
     private GenreService genreService;
 
     @Autowired
+    private ReviewService reviewService;
+
+    @Autowired
     private DirectorService directorService;
 
     @Test
@@ -31,6 +34,7 @@ class FilmorateApplicationTests {
         assertNotNull(filmService);
         assertNotNull(mpaService);
         assertNotNull(genreService);
+        assertNotNull(reviewService);
         assertNotNull(directorService);
     }
 }

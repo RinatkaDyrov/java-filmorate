@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.Like;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Repository
@@ -33,6 +34,36 @@ public class LikeRepository extends BaseRepository<Like> {
             SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rating_id, COUNT(fl.user_id) AS likes
             FROM films f LEFT JOIN likes fl ON f.id = fl.film_id LEFT JOIN film_genre AS fg ON fg.film_id = f.id WHERE fg.genre_id = ?
             GROUP BY f.id ORDER BY likes DESC, f.id ASC LIMIT ?""";
+    private static final String FIND_RECOMMENDED_FILMS = """
+            SELECT l2.film_id
+            FROM likes l1
+            JOIN likes l2 ON l1.film_id = l2.film_id
+            WHERE l1.user_id = ? AND l2.user_id != ?
+              AND l2.film_id NOT IN (
+                  SELECT film_id FROM likes WHERE user_id = ?
+              )
+            GROUP BY l2.film_id
+            ORDER BY COUNT(*) DESC
+            LIMIT 10
+            """;
+    private static final String FIND_SIMILAR_USER = """
+            SELECT l2.user_id, COUNT(*) AS common_likes
+            FROM likes l1
+            JOIN likes l2 ON l1.film_id = l2.film_id
+            WHERE l1.user_id = ? AND l2.user_id != ?
+            GROUP BY l2.user_id
+            ORDER BY common_likes DESC
+            LIMIT 1
+            """;
+    private static final String FIND_FILMS_LIKED_BY_SIMILAR_USER = """
+            SELECT film_id
+            FROM likes
+            WHERE user_id = ?
+              AND film_id NOT IN (
+                SELECT film_id FROM likes WHERE user_id = ?
+              )
+            LIMIT 10
+            """;
 
     public LikeRepository(JdbcTemplate jdbc, RowMapper<Like> mapper) {
         super(jdbc, mapper);
@@ -76,5 +107,34 @@ public class LikeRepository extends BaseRepository<Like> {
         String checkQuery = "SELECT COUNT(*) FROM likes WHERE user_id = ? AND film_id = ?";
         int count = jdbc.queryForObject(checkQuery, Integer.class, userId, filmId);
         return count > 0;
+    }
+
+    public List<Long> findRecommendedFilmIds(Long userId) {
+        log.debug("Запрос на список ID рекомендованных фильмов для пользователя (Id: {}) в хранилище", userId);
+        Long similarUserId = findMostSimilarUser(userId);
+        if (similarUserId == null) {
+            log.debug("Похожих пользователей не найдено для пользователя {}", userId);
+            return List.of();
+        }
+
+        log.debug("Похожий пользователь найден: {}", similarUserId);
+        return findRecommendedFilmIdsBySimilarUser(similarUserId, userId);
+    }
+
+    private Long findMostSimilarUser(Long userId) {
+        List<Long> result = jdbc.query(
+                FIND_SIMILAR_USER,
+                (rs, rowNum) -> rs.getLong("user_id"),
+                userId, userId
+        );
+        return result.isEmpty() ? null : result.getFirst();
+    }
+
+    private List<Long> findRecommendedFilmIdsBySimilarUser(Long similarUserId, Long userId) {
+        return jdbc.query(
+                FIND_FILMS_LIKED_BY_SIMILAR_USER,
+                (rs, rowNum) -> rs.getLong("film_id"),
+                similarUserId, userId
+        );
     }
 }
