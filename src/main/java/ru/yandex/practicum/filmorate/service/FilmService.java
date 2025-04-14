@@ -143,10 +143,12 @@ public class FilmService {
             log.debug("Получение списка фильмов по названию и режиссеру");
             Collection<Film> filmsByTitle = filmStorage.searchFilmsByTitle(query);
             Collection<Film> filmsByDirector = filmStorage.searchFilmsByDirector(query);
-            Set<Film> films = new HashSet<>();
+            Set<Film> films = new HashSet<>(); // Чтобы не добавлял одинаковые фильмы
             films.addAll(filmsByTitle);
             films.addAll(filmsByDirector);
-            return films;
+            List<Film> listFilms = new ArrayList<>(films); // В автотестах требуется выводить фильмы в порядке возрастания id
+            listFilms.sort((f1, f2) -> f1.getId().compareTo(f2.getId()));
+            return listFilms;
         } else if (by.isEmpty()) {
             throw new UnclassifiedException("Не переданы параметры для поиска");
         } else {
