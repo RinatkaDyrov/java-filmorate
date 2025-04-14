@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -95,8 +98,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public boolean removeFriend(long userId, long friendId) {
-        log.debug("Запрос удаления из друзей от пользователя в хранилище");
-        return friendshipRepository.removeFriend(userId, friendId);
+        String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
+        int deleted = jdbcTemplate.update(sql, userId, friendId);
+        return deleted > 0;
     }
 
     @Override
@@ -107,12 +111,28 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteById(Long id) {
-        String sql = "DELETE FROM users WHERE id = ?";
-        jdbcTemplate.update(sql, id);
+        log.debug("Запрос на удаление пользователя по айди");
+        try {
+            // Проверка существования
+            jdbcTemplate.queryForObject(
+                    "SELECT id FROM users WHERE id = ?",
+                    Long.class,
+                    id
+            );
+        } catch (EmptyResultDataAccessException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Пользователь с ID " + id + " не найден"
+            );
+        }
+        jdbcTemplate.update("DELETE FROM likes WHERE user_id = ?", id);
+        jdbcTemplate.update("DELETE FROM friendship WHERE user_id = ? OR friend_id = ?", id, id);
+        jdbcTemplate.update("DELETE FROM users WHERE id = ?", id);
     }
 
     @Override
     public boolean existsById(Long id) {
+        log.debug("Запрос на проверку АйДи, как существующий");
         String sql = "SELECT COUNT(*) FROM users WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;

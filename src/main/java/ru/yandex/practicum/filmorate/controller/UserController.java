@@ -79,10 +79,18 @@ public class UserController {
         return userService.getCommonFriends(id, friendId);
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        log.debug("Запрос на удаление пользователя");
         userService.deleteUserById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto getUserById(@PathVariable Long id) {
+        log.debug("Запрос пользователя с ID: {}", id);
+        return userService.getUserById(id);
     }
 
 }

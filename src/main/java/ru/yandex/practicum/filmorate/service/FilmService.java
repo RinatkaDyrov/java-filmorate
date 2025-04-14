@@ -119,6 +119,7 @@ public class FilmService {
     }
 
     public void deleteFilmById(Long id) {
+        log.debug("Запрос на удаление film по айди");
         if (!filmStorage.existsById(id)) {
             throw new NotFoundException("Film with id " + id + " not found");
         }

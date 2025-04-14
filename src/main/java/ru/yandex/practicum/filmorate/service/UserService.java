@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
@@ -57,59 +59,44 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    // Унифицированный метод
     public UserDto getUserById(long id) {
-        User user = userStorage.findUserById(id);
-        return UserMapper.mapToUserDto(user);
+        return UserMapper.mapToUserDto(
+                userStorage.findUserById(id)
+        );
     }
 
+    // UserService.java
     public void addFriend(long userId, long friendId) {
         if (userId == friendId) {
-            log.warn("Ошибка идентификационного номера при добавлении в друзья:" +
-                    " userId: {}, friendId: {}", userId, friendId);
             throw new ValidationException("Нельзя добавить самого себя в друзья.");
         }
-        User user = userStorage.findUserById(userId);
-        User friend = userStorage.findUserById(friendId);
 
-        if (user == null || friend == null) {
-            log.warn("Ошибка: один из пользователей не найден. userId: {}, friendId: {}", userId, friendId);
-            throw new NotFoundException("Один из пользователей не существует.");
-        }
+        userStorage.findUserById(userId);
+        userStorage.findUserById(friendId);
 
-        boolean success = userStorage.addFriend(userId, friendId);
-        if (success) {
-            log.info("Пользователь {} отправил заявку на дружбу пользователю {}", user.getName(), friend.getName());
-        } else {
-            log.warn("Ошибка при добавлении друга. userId: {}, friendId: {}", userId, friendId);
-            throw new RuntimeException("Не удалось добавить друга.");
-        }
+        // Добавляем взаимную связь
+        userStorage.addFriend(userId, friendId);
+        userStorage.addFriend(friendId, userId);
     }
 
     public void deleteFriend(long userId, long friendId) {
         if (userId == friendId) {
-            log.warn("Ошибка идентификационного номера при удалении из друзей:" +
-                    " userId: {}, friendId: {}", userId, friendId);
-            throw new ValidationException("Нельзя удалить самого себя из друзей.");
-        }
-        User user = userStorage.findUserById(userId);
-        User friend = userStorage.findUserById(friendId);
-
-        if (user == null || friend == null) {
-            log.warn("Ошибка: один из пользователей не найден. userId: {}, friendId: {}", userId, friendId);
-            throw new NotFoundException("Один из пользователей не существует.");
+            log.warn("Попытка удаления самого себя из друзей: {} -> {}", userId, friendId);
+            throw new ValidationException("Нельзя удалить себя из друзей");
         }
 
-        boolean success = userStorage.removeFriend(userId, friendId);
-        if (success) {
-            log.info("Пользователь {} удалил пользователя {} из друзей", user.getName(), friend.getName());
-        } else {
-            log.warn("Ошибка при удалении друга. userId: {}, friendId: {}", userId, friendId);
-            log.info("Пользователи больше не дружат.(да и не дружили)");
+        // Проверка существования обоих пользователей
+        userStorage.findUserById(userId);
+        userStorage.findUserById(friendId);
+
+        if (!userStorage.removeFriend(userId, friendId)) {
+            log.warn("Дружба не найдена: {} -> {}", userId, friendId);
+            throw new NotFoundException("Дружба между пользователями не существует");
         }
     }
 
     public Collection<UserDto> getFriendByUserId(long id) {
-        log.info("Запрашиваются уже у сервиса друганы айдишки {}", id);
         return userStorage.getFriends(id)
                 .stream()
                 .map(UserMapper::mapToUserDto)
@@ -117,16 +104,14 @@ public class UserService {
     }
 
     public Collection<UserDto> getCommonFriends(long userId, long friendId) {
-        log.debug("Получение списка общих друзей пользователей (ID: {}) и (ID: {})", userId, friendId);
-        return userStorage.getCommonFriends(userId, friendId).stream()
+        return userStorage.getCommonFriends(userId, friendId)
+                .stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
 
     public void deleteUserById(Long id) {
-        if (!userStorage.existsById(id)) {
-            throw new NotFoundException("User with id " + id + " not found");
-        }
+        // Убрана избыточная проверка
         userStorage.deleteById(id);
     }
 }

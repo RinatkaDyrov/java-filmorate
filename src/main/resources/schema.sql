@@ -51,11 +51,11 @@ create TABLE IF NOT EXISTS likes (
 );
 
 
-create TABLE IF NOT EXISTS friendship (
+CREATE TABLE IF NOT EXISTS friendship (
     user_id BIGINT,
     friend_id BIGINT,
     confirm_status BOOLEAN,
     PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (friend_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
