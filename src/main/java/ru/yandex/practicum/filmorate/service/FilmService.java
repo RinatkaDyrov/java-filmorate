@@ -140,7 +140,6 @@ public class FilmService {
     public Collection<Film> searchFilms(String query, List<String> by) {
         query = query.trim();
         query = "%" + query + "%";
-        System.out.println(query);
         if (by.size() == 2) {
             log.debug("Получение списка фильмов по названию и режиссеру");
             Collection<Film> filmsByTitle = filmStorage.searchFilmsByTitle(query);
