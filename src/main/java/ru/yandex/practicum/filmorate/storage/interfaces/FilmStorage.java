@@ -46,4 +46,8 @@ public interface FilmStorage {
     default Collection<Film> getPopularFilms(int count, int genreId, int year) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
+
+    default Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
 }

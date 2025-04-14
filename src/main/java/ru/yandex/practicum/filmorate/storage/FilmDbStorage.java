@@ -104,4 +104,9 @@ public class FilmDbStorage implements FilmStorage {
         log.info("Запрос общих фильмов");
         return filmRepository.getCommonFilms(userId, friendId);
     }
+
+    @Override
+    public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
+        return filmRepository.getSortedFilmsByDirector(directorId, sortParams);
+    }
 }

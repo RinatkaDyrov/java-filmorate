@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
@@ -29,7 +28,7 @@ public class FilmService {
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage, LikeRepository likeRepository) {
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -69,6 +68,9 @@ public class FilmService {
 
         if (request.hasGenres()) {
             updFilm.setGenres(request.getGenres());
+        }
+        if (request.hasDirectors()) {
+            updFilm.setDirectors(request.getDirectors());
         }
 
         updFilm = filmStorage.update(updFilm);
@@ -124,5 +126,12 @@ public class FilmService {
 
     public FilmDto findFilmById(long id) {
         return FilmMapper.mapToFilmDto(filmStorage.findFilmById(id));
+    }
+
+    public Collection<FilmDto> getSortedFilmsByDirector(long directorId, String[] sortParams) {
+        return filmStorage.getSortedFilmsByDirector(directorId, sortParams)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
     }
 }
