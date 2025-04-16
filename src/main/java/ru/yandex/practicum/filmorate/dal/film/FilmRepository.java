@@ -27,8 +27,10 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT id, name, description, release_date, duration, rating_id FROM films WHERE id=?";
     private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating_id) VALUES (?, ?, ?, ?, ?)";
-    private static final String FIND_BY_GENRE_QUERY = "SELECT f.* FROM films f " + "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
-    private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " + "JOIN rating_mpa r ON f.rating_id = r.id WHERE r.name = ?";
+    private static final String FIND_BY_GENRE_QUERY = "SELECT f.* FROM films f " +
+            "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
+    private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " +
+            "JOIN rating_mpa r ON f.rating_id = r.id WHERE r.name = ?";
     private static final String COUNT_OF_RATINGS_QUERY = "SELECT COUNT(*) FROM rating_mpa WHERE id = ?";
     private static final String FIND_GENRES_BY_FILM_QUERY = """
             SELECT g.id, g.name FROM genre g JOIN film_genre fg
@@ -53,7 +55,6 @@ public class FilmRepository extends BaseRepository<Film> {
             HAVING COUNT(DISTINCT l.user_id) = 2
             ORDER BY like_count DESC
             """;
-
     private static final String FIND_SORTED_FILMS_BY_DIRECTORS_ID = """
                 SELECT f.*, COUNT(l.film_id) AS like_count
                 FROM films f
@@ -65,6 +66,10 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_FILMS_BY_DIRECTORS_ID = """
             SELECT * FROM films
             WHERE director_id = ?""";
+    private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE id = ?";
+    private static final String DELETE_DIRECTORS_OF_FILM_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
+    private static final String DELETE_GENRE_OF_FILM_QUERY = "DELETE FROM film_genre WHERE film_id = ?";
+    private static final String DELETE_LIKES_OF_FILM_QUERY = "DELETE FROM likes WHERE film_id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -105,7 +110,10 @@ public class FilmRepository extends BaseRepository<Film> {
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(INSERT_QUERY, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = connection.prepareStatement(
+                    INSERT_QUERY,
+                    Statement.RETURN_GENERATED_KEYS
+            );
             ps.setString(1, film.getName());
             ps.setString(2, film.getDescription());
             ps.setDate(3, Date.valueOf(film.getReleaseDate()));
@@ -117,10 +125,18 @@ public class FilmRepository extends BaseRepository<Film> {
         film.setId(keyHolder.getKey().longValue());
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Long> genreIds = film.getGenres().stream().map(Genre::getId).toList();
+            List<Long> genreIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .toList();
 
-            String inSql = genreIds.stream().map(id -> "?").collect(Collectors.joining(", "));
-            List<Long> existingGenreIds = jdbc.queryForList("SELECT id FROM genre WHERE id IN (" + inSql + ")", Long.class, genreIds.toArray());
+            String inSql = genreIds.stream()
+                    .map(id -> "?")
+                    .collect(Collectors.joining(", "));
+            List<Long> existingGenreIds = jdbc.queryForList(
+                    "SELECT id FROM genre WHERE id IN (" + inSql + ")",
+                    Long.class,
+                    genreIds.toArray()
+            );
 
             for (Long genreId : genreIds) {
                 if (!existingGenreIds.contains(genreId)) {
@@ -157,7 +173,15 @@ public class FilmRepository extends BaseRepository<Film> {
             throw new NotFoundException("Attempt to update non-existing movie with id " + film.getId());
         }
 
-        jdbc.update(UPDATE_FILM_QUERY, film.getName(), film.getDescription(), Date.valueOf(film.getReleaseDate()), film.getDuration(), film.getMpa().getId(), film.getId());
+        jdbc.update(
+                UPDATE_FILM_QUERY,
+                film.getName(),
+                film.getDescription(),
+                Date.valueOf(film.getReleaseDate()),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId()
+        );
 
         jdbc.update("DELETE FROM film_genre WHERE film_id = ?", film.getId());
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
@@ -199,12 +223,16 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     private void setDirectorToFilm(Film film) {
-        List<Director> directors = jdbc.query(FIND_DIRECTORS_QUERY, (rs, rowNum) -> {
-            Director director = new Director();
-            director.setId(rs.getLong("id"));
-            director.setName(rs.getString("name"));
-            return director;
-        }, film.getId());
+        List<Director> directors = jdbc.query(
+                FIND_DIRECTORS_QUERY,
+                (rs, rowNum) -> {
+                    Director director = new Director();
+                    director.setId(rs.getLong("id"));
+                    director.setName(rs.getString("name"));
+                    return director;
+                },
+                film.getId()
+        );
         film.setDirectors(directors);
     }
 
@@ -217,11 +245,6 @@ public class FilmRepository extends BaseRepository<Film> {
         }
 
         return commonFilms;
-    }
-
-    public List<Film> findAllById(List<Long> recommendedFilmIds) {
-        log.debug("Запрос на список рекомендованных фильмов на основе списка ID  в хранилище фильмов");
-        return recommendedFilmIds.stream().map(this::getFilmById).flatMap(Optional::stream).collect(Collectors.toList());
     }
 
     public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
@@ -263,5 +286,18 @@ public class FilmRepository extends BaseRepository<Film> {
             }
         }
         return true;
+    }
+
+    public void deleteFilm(Long id) {
+        checkFilm(id);
+        delete(DELETE_GENRE_OF_FILM_QUERY, id);
+        delete(DELETE_DIRECTORS_OF_FILM_QUERY, id);
+        delete(DELETE_LIKES_OF_FILM_QUERY, id);
+        delete(DELETE_FILM_QUERY, id);
+    }
+
+    public void checkFilm(Long id) {
+        Optional<Film> film = getFilmById(id);
+        if (film.isEmpty()) throw new NotFoundException("Film not found");
     }
 }

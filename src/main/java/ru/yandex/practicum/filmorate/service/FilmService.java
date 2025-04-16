@@ -134,4 +134,8 @@ public class FilmService {
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
     }
+
+    public void deleteFilm(long id) {
+        filmStorage.deleteFilm(id);
+    }
 }

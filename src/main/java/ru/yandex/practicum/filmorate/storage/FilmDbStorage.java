@@ -109,4 +109,9 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
         return filmRepository.getSortedFilmsByDirector(directorId, sortParams);
     }
+
+    @Override
+    public void deleteFilm(Long id) {
+        filmRepository.deleteFilm(id);
+    }
 }

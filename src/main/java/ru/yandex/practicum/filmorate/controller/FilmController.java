@@ -92,4 +92,10 @@ public class FilmController {
         String[] sortParams = sortBy.split(",");
         return filmService.getSortedFilmsByDirector(directorId, sortParams);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteFilm(@PathVariable Long id) {
+        filmService.deleteFilm(id);
+    }
 }

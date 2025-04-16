@@ -50,4 +50,8 @@ public interface FilmStorage {
     default Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
+
+    default void deleteFilm(Long id) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
 }
