@@ -68,6 +68,7 @@ public class FilmRepository extends BaseRepository<Film> {
             WHERE director_id = ?""";
     private static final String FIND_FILM_ID_BY_NAME_QUERY = "SELECT id FROM films WHERE LOWER(name) LIKE LOWER(?)";
     private static final String FIND_FILM_ID_BY_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(d.name) LIKE LOWER(?)";
+    private static final String FIND_FILM_ID_BY_NAME_AND_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) GROUP BY f.id ORDER BY f.id ASC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -293,6 +294,11 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public Collection<Film> searchFilmsByDirector(String query) {
         List<Long> filmsId = jdbc.queryForList(FIND_FILM_ID_BY_DIRECTOR_QUERY, Long.class, query);
+        return getFilmsById(filmsId);
+    }
+
+    public Collection<Film> searchFilmsByTitleAndDirector(String query) {
+        List<Long> filmsId = jdbc.queryForList(FIND_FILM_ID_BY_NAME_AND_DIRECTOR_QUERY, Long.class, query, query);
         return getFilmsById(filmsId);
     }
 

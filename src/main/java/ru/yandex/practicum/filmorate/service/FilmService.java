@@ -17,7 +17,7 @@ import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.Collection;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -141,14 +141,7 @@ public class FilmService {
         query = "%" + query + "%";
         if (by.size() == 2) {
             log.debug("Получение списка фильмов по названию и режиссеру");
-            Collection<Film> filmsByTitle = filmStorage.searchFilmsByTitle(query);
-            Collection<Film> filmsByDirector = filmStorage.searchFilmsByDirector(query);
-            Set<Film> films = new HashSet<>(); // Чтобы не добавлял одинаковые фильмы
-            films.addAll(filmsByTitle);
-            films.addAll(filmsByDirector);
-            List<Film> listFilms = new ArrayList<>(films); // В автотестах требуется выводить фильмы в порядке возрастания id
-            listFilms.sort((f1, f2) -> f1.getId().compareTo(f2.getId()));
-            return listFilms;
+            return filmStorage.searchFilmsByTitleAndDirector(query);
         } else if (by.isEmpty()) {
             throw new UnclassifiedException("Не переданы параметры для поиска");
         } else {
