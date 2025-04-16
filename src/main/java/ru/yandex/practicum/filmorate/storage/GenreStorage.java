@@ -22,6 +22,5 @@ public class GenreStorage {
     public Genre findById(long id) {
         log.info("Ищем жанр в хранилище по id {}", id);
         return genreRepository.findGenreById(id);
-
     }
 }
