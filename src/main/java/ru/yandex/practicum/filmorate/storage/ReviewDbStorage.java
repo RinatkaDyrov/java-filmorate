@@ -64,7 +64,6 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void addLike(Long reviewId, Long userId) {
         log.info("Добавление лайка к отзыву с ID: {} от пользователя с ID: {}", reviewId, userId);
-//        eventRepository.addLikeEvent(userId, reviewId);
         reviewRepository.addLike(reviewId, userId);
     }
 
