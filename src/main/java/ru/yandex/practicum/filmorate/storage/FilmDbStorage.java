@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.event.EventRepository;
 import ru.yandex.practicum.filmorate.dal.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
@@ -22,6 +23,7 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final EventRepository eventRepository;
 
 
     @Override
@@ -72,12 +74,14 @@ public class FilmDbStorage implements FilmStorage {
         if (likeRepository.isThisPairExist(userId, filmId)) {
             throw new ConditionsNotMetException("У вас уже стоит лайк на данном фильме");
         }
+        eventRepository.addLikeEvent(userId, filmId);
         return likeRepository.addLike(userId, filmId);
     }
 
     @Override
     public boolean removeLike(long userId, long filmId) {
         log.debug("Удаление лайка в хранилище");
+        eventRepository.removeLikeEvent(userId, filmId);
         return likeRepository.deleteLike(userId, filmId);
     }
 
