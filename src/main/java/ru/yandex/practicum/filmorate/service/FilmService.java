@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.UnclassifiedException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -133,5 +134,27 @@ public class FilmService {
                 .stream()
                 .map(FilmMapper::mapToFilmDto)
                 .collect(Collectors.toList());
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        query = query.trim();
+        query = "%" + query + "%";
+        if (by.size() == 2) {
+            log.debug("Получение списка фильмов по названию и режиссеру");
+            return filmStorage.searchFilmsByTitleAndDirector(query);
+        } else if (by.isEmpty()) {
+            throw new UnclassifiedException("Не переданы параметры для поиска");
+        } else {
+            switch (by.get(0)) {
+                case "title":
+                    log.debug("Получение списка фильмов по названию");
+                    return filmStorage.searchFilmsByTitle(query);
+                case "director":
+                    log.debug("Получение списка фильмов по режиссеру");
+                    return filmStorage.searchFilmsByDirector(query);
+                default:
+                    throw new UnclassifiedException("Поиск по этому параметру не реализован");
+            }
+        }
     }
 }

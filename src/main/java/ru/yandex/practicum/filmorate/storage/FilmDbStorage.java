@@ -109,4 +109,22 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
         return filmRepository.getSortedFilmsByDirector(directorId, sortParams);
     }
+
+    @Override
+    public Collection<Film> searchFilmsByTitle(String query) {
+        log.debug("Поиск фильмов по названию в хранилище");
+        return filmRepository.searchFilmsByTitle(query);
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByDirector(String query) {
+        log.debug("Поиск фильмов по режиссеру в хранилище");
+        return filmRepository.searchFilmsByDirector(query);
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByTitleAndDirector(String query) {
+        log.debug("Поиск фильмов по названию и по режиссеру в хранилище");
+        return filmRepository.searchFilmsByTitleAndDirector(query);
+    }
 }

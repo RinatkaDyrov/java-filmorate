@@ -92,4 +92,11 @@ public class FilmController {
         String[] sortParams = sortBy.split(",");
         return filmService.getSortedFilmsByDirector(directorId, sortParams);
     }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> searchFilms(@RequestParam String query, @RequestParam List<String> by) {
+        log.debug("Поиск фильмов по запросу", query, by);
+        return filmService.searchFilms(query, by);
+    }
 }
