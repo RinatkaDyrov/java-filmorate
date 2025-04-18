@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
@@ -21,6 +23,7 @@ import java.util.*;
 public class UserController {
 
     private final UserService userService;
+    private final EventService eventService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -80,11 +83,16 @@ public class UserController {
     }
 
     @GetMapping("/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
     public List<FilmDto> getRecommendations(@PathVariable Long id) {
         log.debug("Запрос на список рекомендаций для пользователя (Id: {})", id);
         return userService.getRecommendations(id);
     }
 
+    @GetMapping("/{id}/feed")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Event> getEventsByUserId(@PathVariable() long id) {
+        return eventService.getEventListByUserId(id);
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser(@PathVariable long id) {

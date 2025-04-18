@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.event.EventRepository;
 import ru.yandex.practicum.filmorate.dal.review.ReviewRepository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.interfaces.ReviewStorage;
 
@@ -15,22 +17,29 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
     private final ReviewRepository reviewRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public Review create(Review review) {
         log.info("Создание отзыва: {}", review);
-        return reviewRepository.create(review);
+        Review newReview = reviewRepository.create(review);
+        eventRepository.addReviewEvent(newReview.getUserId(), newReview.getReviewId());
+        return newReview;
     }
 
     @Override
     public Review update(Review review) {
         log.info("Обновление отзыва: {}", review);
+        eventRepository.updateReviewEvent(review.getUserId(), review.getReviewId());
         return reviewRepository.update(review);
     }
 
     @Override
     public void deleteById(Long reviewId) {
         log.info("Удаление отзыва с ID: {}", reviewId);
+        Review deletedReview = findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Ревью с ID: " + reviewId + " не найдено."));
+        eventRepository.removeReviewEvent(deletedReview.getUserId(), reviewId);
         reviewRepository.deleteById(reviewId);
     }
 

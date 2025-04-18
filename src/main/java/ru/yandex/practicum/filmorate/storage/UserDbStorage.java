@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.event.EventRepository;
 import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -18,6 +19,7 @@ public class UserDbStorage implements UserStorage {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public Collection<User> findAll() {
@@ -70,6 +72,7 @@ public class UserDbStorage implements UserStorage {
         if (addingStatus) {
             log.debug("Успешно");
         }
+        eventRepository.addFriendEvent(userId, friendId);
         return addingStatus;
     }
 
@@ -94,6 +97,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public boolean removeFriend(long userId, long friendId) {
         log.debug("Запрос удаления из друзей от пользователя в хранилище");
+        eventRepository.removeFriendEvent(userId, friendId);
         return friendshipRepository.removeFriend(userId, friendId);
     }
 
