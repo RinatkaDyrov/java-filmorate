@@ -14,14 +14,7 @@ import java.util.Optional;
 @Slf4j
 @Repository
 public class ReviewRepository extends BaseRepository<Review> implements ReviewStorage {
-    private static final String FIND_ALL_REVIEW = """
-                    SELECT r.*, COALESCE(SUM(ru.rating), 0) AS useful
-                    FROM review r
-                    LEFT JOIN review_users ru ON r.review_id = ru.review_id
-                    GROUP BY r.review_id
-                    ORDER BY useful DESC
-                    LIMIT ?
-                """;
+    private static final String FIND_ALL_REVIEW = "SELECT * FROM review ORDER BY useful DESC";
 
     private static final String CREATE_REVIEW = """
             INSERT INTO review (film_id,
@@ -67,8 +60,8 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
     }
 
     @Override
-    public List<Review> findAll(int count) {
-        return findMany(FIND_ALL_REVIEW, mapper, count);
+    public List<Review> findAll() {
+        return jdbc.query(FIND_ALL_REVIEW, mapper);
     }
 
     @Override
@@ -86,11 +79,17 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
 
     @Override
     public Review update(Review review) {
-        super.update(UPDATE_REVIEW,
-                review.getContent(),
-                review.getIsPositive(),
-                review.getReviewId());
-        return review;
+        Optional<Review> existingReview = findById(review.getReviewId());
+        if (existingReview.isPresent()) {
+            super.update(UPDATE_REVIEW,
+                    review.getContent(),
+                    review.getIsPositive(),
+                    review.getReviewId());
+            return findById(review.getReviewId())
+                    .orElseThrow(() -> new RuntimeException("Не удалось получить обновленный отзыв с ID: " + review.getReviewId()));
+        } else {
+            throw new RuntimeException("Отзыв с ID " + review.getReviewId() + " не существует.");
+        }
     }
 
     @Override
