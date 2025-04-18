@@ -97,8 +97,8 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Запрос популярных фильмов в хранилище");
         Collection<Film> films = likeRepository.findPopularFilms(count);
         return films.stream()
-                .map(x-> filmRepository.getFilmById(x.getId()))
-                .map(x-> x.get())
+                .map(x -> filmRepository.getFilmById(x.getId()))
+                .map(x -> x.get())
                 .collect(Collectors.toList());
     }
 
@@ -107,8 +107,8 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Запрос популярных фильмов в хранилище");
         Collection<Film> films = likeRepository.findPopularFilms(count, genreId, year);
         return films.stream()
-                .map(x-> filmRepository.getFilmById(x.getId()))
-                .map(x-> x.get())
+                .map(x -> filmRepository.getFilmById(x.getId()))
+                .map(x -> x.get())
                 .collect(Collectors.toList());
     }
 
