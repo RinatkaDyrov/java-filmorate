@@ -84,4 +84,16 @@ public class UserController {
         log.debug("Запрос на список рекомендаций для пользователя (Id: {})", id);
         return userService.getRecommendations(id);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto getUserById(@PathVariable long id) {
+        return userService.getUserById(id);
+    }
 }
