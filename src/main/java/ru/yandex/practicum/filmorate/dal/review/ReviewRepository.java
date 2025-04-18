@@ -86,7 +86,7 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
                     review.getIsPositive(),
                     review.getReviewId());
             return findById(review.getReviewId())
-                    .orElseThrow(() -> new RuntimeException("Не удалось получить обновленный отзыв с ID: " + review.getReviewId()));
+                    .orElseThrow(() -> new RuntimeException("Не удалось получить обновленный отзыв с ID- " + review.getReviewId()));
         } else {
             throw new RuntimeException("Отзыв с ID " + review.getReviewId() + " не существует.");
         }
