@@ -131,4 +131,9 @@ public class FilmDbStorage implements FilmStorage {
         log.debug("Поиск фильмов по названию и по режиссеру в хранилище");
         return filmRepository.searchFilmsByTitleAndDirector(query);
     }
+
+    @Override
+    public void deleteFilm(Long id) {
+        filmRepository.deleteFilm(id);
+    }
 }

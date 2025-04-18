@@ -39,4 +39,8 @@ public interface UserStorage {
     default boolean removeFriend(long userId, long friendId) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
+
+    default void deleteUser(Long id) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
 }

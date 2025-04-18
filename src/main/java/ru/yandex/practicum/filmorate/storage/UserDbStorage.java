@@ -106,4 +106,9 @@ public class UserDbStorage implements UserStorage {
         log.debug("Запрос списка общих друзей пользователей в хранилище");
         return friendshipRepository.findCommonFriends(userId, friendId);
     }
+
+    @Override
+    public void deleteUser(Long id) {
+        userRepository.deleteUser(id);
+    }
 }

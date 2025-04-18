@@ -129,4 +129,8 @@ public class UserService {
         List<Film> films = filmRepository.findAllById(recommendedFilmIds);
         return films.stream().map(FilmMapper::mapToFilmDto).collect(Collectors.toList());
     }
+
+    public void deleteUser(Long id) {
+        userStorage.deleteUser(id);
+    }
 }

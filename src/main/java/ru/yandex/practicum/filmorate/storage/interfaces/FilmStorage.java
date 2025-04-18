@@ -62,4 +62,8 @@ public interface FilmStorage {
     default Collection<Film> searchFilmsByTitleAndDirector(String query) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
+
+    default void deleteFilm(Long id) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    }
 }
