@@ -16,7 +16,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,9 +69,12 @@ public class FilmService {
 
         updFilm = FilmMapper.updateFilmFields(updFilm, request);
 
-        if (request.hasGenres()) {
+        if (request.getGenres() == null || request.getGenres().isEmpty()) {
+            updFilm.setGenres(new HashSet<>());
+        } else {
             updFilm.setGenres(request.getGenres());
         }
+
         if (request.hasDirectors()) {
             updFilm.setDirectors(request.getDirectors());
         }
