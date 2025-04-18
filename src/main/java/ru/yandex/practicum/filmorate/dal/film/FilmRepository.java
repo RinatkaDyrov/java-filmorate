@@ -67,7 +67,7 @@ public class FilmRepository extends BaseRepository<Film> {
             WHERE director_id = ?""";
     private static final String FIND_FILM_ID_BY_NAME_QUERY = "SELECT id FROM films WHERE LOWER(name) LIKE LOWER(?)";
     private static final String FIND_FILM_ID_BY_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(d.name) LIKE LOWER(?)";
-    private static final String FIND_FILM_ID_BY_NAME_AND_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) GROUP BY f.id ORDER BY f.id ASC";
+    private static final String FIND_FILM_ID_BY_NAME_AND_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) GROUP BY f.id ORDER BY f.id DESC";
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String DELETE_DIRECTORS_OF_FILM_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
     private static final String DELETE_GENRE_OF_FILM_QUERY = "DELETE FROM film_genre WHERE film_id = ?";
@@ -78,7 +78,11 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public List<Film> findAllFilms() {
-        return findMany(FIND_ALL_QUERY);
+        return findMany(FIND_ALL_QUERY).stream()
+                .map(x -> x.getId())
+                .map(x -> getFilmById(x))
+                .map(x -> x.get())
+                .collect(Collectors.toList());
     }
 
     public Optional<Film> getFilmById(long id) {
