@@ -78,7 +78,6 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public List<Film> findAllFilms() {
-        //return findMany(FIND_ALL_QUERY);
         return findMany(FIND_ALL_QUERY).stream()
                 .map(x -> x.getId())
                 .map(x -> getFilmById(x))
