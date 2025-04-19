@@ -40,7 +40,6 @@ public class DirectorService {
         if (!request.hasValidName()) {
             throw new IllegalArgumentException("Имя режиссера не может быть пустым.");
         }
-
         Director director = DirectorMapper.mapToDirector(request);
         director = directorStorage.create(director);
         return DirectorMapper.mapToDirectorDto(director);
