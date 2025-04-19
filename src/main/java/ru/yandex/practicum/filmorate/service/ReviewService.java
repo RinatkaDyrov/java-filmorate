@@ -39,7 +39,7 @@ public class ReviewService {
     public List<Review> getReviews(Long filmId, int count) {
         return (filmId != null)
                 ? reviewDbStorage.findAllByFilmId(filmId, count)
-                : reviewDbStorage.findAll(count);
+                : reviewDbStorage.findAll();
     }
 
     public void addLike(Long reviewId, Long userId) {

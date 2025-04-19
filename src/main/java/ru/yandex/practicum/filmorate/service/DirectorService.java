@@ -37,6 +37,9 @@ public class DirectorService {
 
     public DirectorDto createDirector(NewDirectorRequest request) {
         log.debug("Создание нового режиссера в сервисе");
+        if (!request.hasValidName()) {
+            throw new IllegalArgumentException("Имя режиссера не может быть пустым.");
+        }
         Director director = DirectorMapper.mapToDirector(request);
         director = directorStorage.create(director);
         return DirectorMapper.mapToDirectorDto(director);

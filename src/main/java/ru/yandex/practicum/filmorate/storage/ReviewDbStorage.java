@@ -56,9 +56,9 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public List<Review> findAll(int count) {
-        log.info("Поиск всех отзывов с количеством: {}", count);
-        return reviewRepository.findAll(count);
+    public List<Review> findAll() {
+        log.info("Поиск всех отзывов");
+        return reviewRepository.findAll();
     }
 
     @Override

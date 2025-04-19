@@ -1,10 +1,13 @@
 package ru.yandex.practicum.filmorate.dal.event;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.BaseRepository;
+import ru.yandex.practicum.filmorate.dal.user.UserRepository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.OperationType;
@@ -15,17 +18,27 @@ import java.util.List;
 @Slf4j
 @Repository
 public class EventRepository extends BaseRepository<Event> {
-
+    private final UserRepository userRepository;
     private static final String FIND_EVENT_LIST_BY_USER_ID = "SELECT * FROM events WHERE user_id=?";
     private static final String INSERT_NEW_EVENT = """
-            INSERT INTO events (time_stamp, user_id, event_type, operation, entity_id)
-            VALUES (?, ?, ?, ?, ?)""";
+            INSERT INTO events (time_stamp,
+                                user_id,
+                                event_type,
+                                operation,
+                                entity_id)
+            VALUES (?, ?, ?, ?, ?)
+            """;
 
-    public EventRepository(JdbcTemplate jdbc, RowMapper<Event> mapper) {
+    @Autowired
+    public EventRepository(JdbcTemplate jdbc, RowMapper<Event> mapper, UserRepository userRepository) {
         super(jdbc, mapper);
+        this.userRepository = userRepository;
     }
 
     public List<Event> getEventListByUserId(long id) {
+        if (userRepository.findUserById(id).isEmpty()) {
+            throw new NotFoundException("Пользователь с ID " + id + " не найден.");
+        }
         return findMany(FIND_EVENT_LIST_BY_USER_ID, id);
     }
 
