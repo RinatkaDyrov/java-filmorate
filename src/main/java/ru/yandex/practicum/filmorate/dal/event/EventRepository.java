@@ -9,11 +9,8 @@ import ru.yandex.practicum.filmorate.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.OperationType;
-import ru.yandex.practicum.filmorate.storage.UserDbStorage;
-import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.time.Instant;
 import java.util.List;
