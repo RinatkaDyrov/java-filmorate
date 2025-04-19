@@ -25,14 +25,44 @@ import java.util.stream.Collectors;
 public class FilmRepository extends BaseRepository<Film> {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
-    private static final String FIND_BY_ID_QUERY = "SELECT id, name, description, release_date, duration, rating_id FROM films WHERE id=?";
-    private static final String INSERT_QUERY = "INSERT INTO films (name, description, release_date, duration, rating_id) VALUES (?, ?, ?, ?, ?)";
-    private static final String FIND_BY_GENRE_QUERY = "SELECT f.* FROM films f " + "JOIN genre g ON f.genre_id = g.id WHERE g.name = ?";
-    private static final String FIND_BY_RATING_QUERY = "SELECT f.* FROM films f " + "JOIN rating_mpa r ON f.rating_id = r.id WHERE r.name = ?";
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT id,
+                   name,
+                   description,
+                   release_date,
+                   duration,
+                   rating_id
+            FROM films
+            WHERE id=?
+            """;
+    private static final String INSERT_QUERY = """
+            INSERT INTO films (name,
+                               description,
+                               release_date,
+                               duration,
+                               rating_id)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+    private static final String FIND_BY_GENRE_QUERY = """
+            SELECT f.*
+            FROM films f
+            JOIN genre g ON f.genre_id = g.id
+            WHERE g.name = ?
+            """;
+    private static final String FIND_BY_RATING_QUERY = """
+            SELECT f.*
+            FROM films f
+            JOIN rating_mpa r ON f.rating_id = r.id
+            WHERE r.name = ?
+            """;
     private static final String COUNT_OF_RATINGS_QUERY = "SELECT COUNT(*) FROM rating_mpa WHERE id = ?";
     private static final String FIND_GENRES_BY_FILM_QUERY = """
-            SELECT g.id, g.name FROM genre g JOIN film_genre fg
-            ON g.id = fg.genre_id WHERE fg.film_id = ? ORDER BY g.id ASC
+            SELECT g.id, g.name
+            FROM genre g
+            JOIN film_genre fg
+            ON g.id = fg.genre_id
+            WHERE fg.film_id = ?
+            ORDER BY g.id ASC
             """;
     private static final String FIND_MPA_RATINGS_QUERY = "SELECT id, name FROM rating_mpa WHERE id = ?";
     private static final String FIND_DIRECTORS_QUERY = """
@@ -55,19 +85,34 @@ public class FilmRepository extends BaseRepository<Film> {
             """;
 
     private static final String FIND_SORTED_FILMS_BY_DIRECTORS_ID = """
-                SELECT f.*, COUNT(l.film_id) AS like_count
-                FROM films f
-                JOIN film_directors fd ON f.id = fd.film_id
-                LEFT JOIN likes l ON f.id = l.film_id
-                WHERE fd.director_id = ?
-                GROUP BY f.id, f.name, f.release_date, f.duration, f.description, f.rating_id
+            SELECT f.*, COUNT(l.film_id) AS like_count
+            FROM films f
+            JOIN film_directors fd ON f.id = fd.film_id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE fd.director_id = ?
+            GROUP BY f.id, f.name, f.release_date, f.duration, f.description, f.rating_id
             """;
     private static final String FIND_FILMS_BY_DIRECTORS_ID = """
             SELECT * FROM films
-            WHERE director_id = ?""";
+            WHERE director_id = ?
+            """;
     private static final String FIND_FILM_ID_BY_NAME_QUERY = "SELECT id FROM films WHERE LOWER(name) LIKE LOWER(?)";
-    private static final String FIND_FILM_ID_BY_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(d.name) LIKE LOWER(?)";
-    private static final String FIND_FILM_ID_BY_NAME_AND_DIRECTOR_QUERY = "SELECT f.id FROM films AS f LEFT JOIN film_directors AS fd ON fd.film_id = f.id LEFT JOIN directors AS d ON d.id = fd.director_id WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?) GROUP BY f.id ORDER BY f.id DESC";
+    private static final String FIND_FILM_ID_BY_DIRECTOR_QUERY = """
+            SELECT f.id
+            FROM films AS f
+            LEFT JOIN film_directors AS fd ON fd.film_id = f.id
+            LEFT JOIN directors AS d ON d.id = fd.director_id
+            WHERE LOWER(d.name) LIKE LOWER(?)
+            """;
+    private static final String FIND_FILM_ID_BY_NAME_AND_DIRECTOR_QUERY = """
+            SELECT f.id
+            FROM films AS f
+            LEFT JOIN film_directors AS fd ON fd.film_id = f.id
+            LEFT JOIN directors AS d ON d.id = fd.director_id
+            WHERE LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?)
+            GROUP BY f.id
+            ORDER BY f.id DESC
+            """;
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE id = ?";
     private static final String DELETE_DIRECTORS_OF_FILM_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
     private static final String DELETE_GENRE_OF_FILM_QUERY = "DELETE FROM film_genre WHERE film_id = ?";
