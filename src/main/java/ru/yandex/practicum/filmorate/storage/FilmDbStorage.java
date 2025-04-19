@@ -3,15 +3,17 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.event.EventRepository;
 import ru.yandex.practicum.filmorate.dal.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("filmDbStorage")
@@ -21,6 +23,7 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRepository filmRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
+    private final EventRepository eventRepository;
 
 
     @Override
@@ -63,21 +66,27 @@ public class FilmDbStorage implements FilmStorage {
     public boolean addLike(long userId, long filmId) {
         log.debug("Добавление лайка в хранилище");
         if (userRepository.findUserById(userId).isEmpty()) {
+            System.out.println(userRepository.findUserById(userId));
             throw new NotFoundException("Пользователь не найден");
         }
         if (filmRepository.getFilmById(filmId).isEmpty()) {
             throw new NotFoundException("Фильм не найден");
         }
         if (likeRepository.isThisPairExist(userId, filmId)) {
-            throw new ConditionsNotMetException("У вас уже стоит лайк на данном фильме");
+            log.debug("Пользователь (ID: {}) уже поставил лайк фильму (ID: {})", userId, filmId);
+            eventRepository.addLikeEvent(userId, filmId);
+            return true;
         }
+        eventRepository.addLikeEvent(userId, filmId);
         return likeRepository.addLike(userId, filmId);
     }
 
     @Override
     public boolean removeLike(long userId, long filmId) {
         log.debug("Удаление лайка в хранилище");
-        return likeRepository.deleteLike(userId, filmId);
+        boolean deleteLikeSuccess = likeRepository.deleteLike(userId, filmId);
+        eventRepository.removeLikeEvent(userId, filmId);
+        return deleteLikeSuccess;
     }
 
     @Override
@@ -89,6 +98,54 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getPopularFilms(int count) {
         log.debug("Запрос популярных фильмов в хранилище");
-        return likeRepository.findPopularFilms(count);
+        Collection<Film> films = likeRepository.findPopularFilms(count);
+        return films.stream()
+                .map(x -> filmRepository.getFilmById(x.getId()))
+                .map(x -> x.get())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Film> getPopularFilms(int count, int genreId, int year) {
+        log.debug("Запрос популярных фильмов в хранилище");
+        Collection<Film> films = likeRepository.findPopularFilms(count, genreId, year);
+        return films.stream()
+                .map(x -> filmRepository.getFilmById(x.getId()))
+                .map(x -> x.get())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        log.info("Запрос общих фильмов");
+        return filmRepository.getCommonFilms(userId, friendId);
+    }
+
+    @Override
+    public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
+        return filmRepository.getSortedFilmsByDirector(directorId, sortParams);
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByTitle(String query) {
+        log.debug("Поиск фильмов по названию в хранилище");
+        return filmRepository.searchFilmsByTitle(query);
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByDirector(String query) {
+        log.debug("Поиск фильмов по режиссеру в хранилище");
+        return filmRepository.searchFilmsByDirector(query);
+    }
+
+    @Override
+    public Collection<Film> searchFilmsByTitleAndDirector(String query) {
+        log.debug("Поиск фильмов по названию и по режиссеру в хранилище");
+        return filmRepository.searchFilmsByTitleAndDirector(query);
+    }
+
+    @Override
+    public void deleteFilm(Long id) {
+        filmRepository.deleteFilm(id);
     }
 }

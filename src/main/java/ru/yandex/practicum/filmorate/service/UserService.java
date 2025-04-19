@@ -4,27 +4,37 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.film.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
+import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.dto.user.UserDto;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final LikeRepository likeRepository;
+    private final FilmRepository filmRepository;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, LikeRepository likeRepository, FilmRepository filmRepository) {
         this.userStorage = userStorage;
+        this.likeRepository = likeRepository;
+        this.filmRepository = filmRepository;
     }
 
     public UserDto createUser(NewUserRequest request) {
@@ -51,10 +61,7 @@ public class UserService {
     }
 
     public Collection<UserDto> getAllUsers() {
-        return userStorage.findAll()
-                .stream()
-                .map(UserMapper::mapToUserDto)
-                .collect(Collectors.toList());
+        return userStorage.findAll().stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     public UserDto getUserById(long id) {
@@ -64,8 +71,7 @@ public class UserService {
 
     public void addFriend(long userId, long friendId) {
         if (userId == friendId) {
-            log.warn("Ошибка идентификационного номера при добавлении в друзья:" +
-                    " userId: {}, friendId: {}", userId, friendId);
+            log.warn("Ошибка идентификационного номера при добавлении в друзья:" + " userId: {}, friendId: {}", userId, friendId);
             throw new ValidationException("Нельзя добавить самого себя в друзья.");
         }
         User user = userStorage.findUserById(userId);
@@ -87,8 +93,7 @@ public class UserService {
 
     public void deleteFriend(long userId, long friendId) {
         if (userId == friendId) {
-            log.warn("Ошибка идентификационного номера при удалении из друзей:" +
-                    " userId: {}, friendId: {}", userId, friendId);
+            log.warn("Ошибка идентификационного номера при удалении из друзей:" + " userId: {}, friendId: {}", userId, friendId);
             throw new ValidationException("Нельзя удалить самого себя из друзей.");
         }
         User user = userStorage.findUserById(userId);
@@ -110,16 +115,22 @@ public class UserService {
 
     public Collection<UserDto> getFriendByUserId(long id) {
         log.info("Запрашиваются уже у сервиса друганы айдишки {}", id);
-        return userStorage.getFriends(id)
-                .stream()
-                .map(UserMapper::mapToUserDto)
-                .collect(Collectors.toList());
+        return userStorage.getFriends(id).stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
     }
 
     public Collection<UserDto> getCommonFriends(long userId, long friendId) {
         log.debug("Получение списка общих друзей пользователей (ID: {}) и (ID: {})", userId, friendId);
-        return userStorage.getCommonFriends(userId, friendId).stream()
-                .map(UserMapper::mapToUserDto)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriends(userId, friendId).stream().map(UserMapper::mapToUserDto).collect(Collectors.toList());
+    }
+
+    public List<FilmDto> getRecommendations(Long userId) {
+        log.debug("Запрос на список рекомендаций для пользователя (Id: {}) в сервисе", userId);
+        List<Long> recommendedFilmIds = likeRepository.findRecommendedFilmIds(userId);
+        List<Film> films = filmRepository.findAllById(recommendedFilmIds);
+        return films.stream().map(FilmMapper::mapToFilmDto).collect(Collectors.toList());
+    }
+
+    public void deleteUser(Long id) {
+        userStorage.deleteUser(id);
     }
 }

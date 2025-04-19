@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.Film;
+package ru.yandex.practicum.filmorate.Recommendations.Film;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
@@ -145,5 +146,27 @@ public class FilmControllerTest {
                 .andExpect(status().isOk());
 
         verify(filmService, times(1)).deleteLike(filmId, userId);
+    }
+
+    @Test
+    public void getCommonFilmsReturnsCommonFilmList() throws Exception {
+        Film film1 = new Film();
+        film1.setId(1L);
+        film1.setName("Film 1");
+        film1.setDescription("Description of film 1");
+
+        Film film2 = new Film();
+        film2.setId(2L);
+        film2.setName("Film 2");
+        film2.setDescription("Description of film 2");
+
+        List<Film> commonFilms = Arrays.asList(film1, film2);
+        when(filmService.getCommonFilms(1L, 2L)).thenReturn(commonFilms);
+
+        mockMvc.perform(get("/films/common?userId=1&friendId=2")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Film 1"))
+                .andExpect(jsonPath("$[1].name").value("Film 2"));
     }
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dal.event.EventRepository;
 import ru.yandex.practicum.filmorate.dal.friendship.FriendshipRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -18,6 +19,7 @@ public class UserDbStorage implements UserStorage {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public Collection<User> findAll() {
@@ -70,6 +72,7 @@ public class UserDbStorage implements UserStorage {
         if (addingStatus) {
             log.debug("Успешно");
         }
+        eventRepository.addFriendEvent(userId, friendId);
         return addingStatus;
     }
 
@@ -94,12 +97,22 @@ public class UserDbStorage implements UserStorage {
     @Override
     public boolean removeFriend(long userId, long friendId) {
         log.debug("Запрос удаления из друзей от пользователя в хранилище");
-        return friendshipRepository.removeFriend(userId, friendId);
+        boolean deletingStatus = friendshipRepository.removeFriend(userId, friendId);
+        if (deletingStatus) {
+            log.debug("Успешно");
+        }
+        eventRepository.removeFriendEvent(userId, friendId);
+        return deletingStatus;
     }
 
     @Override
     public Collection<User> getCommonFriends(long userId, long friendId) {
         log.debug("Запрос списка общих друзей пользователей в хранилище");
         return friendshipRepository.findCommonFriends(userId, friendId);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        userRepository.deleteUser(id);
     }
 }

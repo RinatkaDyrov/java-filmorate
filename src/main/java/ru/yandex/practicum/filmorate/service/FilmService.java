@@ -4,19 +4,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film.FilmDto;
 import ru.yandex.practicum.filmorate.dto.film.NewFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.UnclassifiedException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,7 +31,7 @@ public class FilmService {
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage, LikeRepository likeRepository) {
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -56,7 +59,6 @@ public class FilmService {
         return FilmMapper.mapToFilmDto(film);
     }
 
-
     public FilmDto updateFilm(long id, UpdateFilmRequest request) {
         log.info("Обновление фильма в сервисе");
         Film updFilm = filmStorage.findFilmById(id);
@@ -67,8 +69,16 @@ public class FilmService {
 
         updFilm = FilmMapper.updateFilmFields(updFilm, request);
 
-        if (request.hasGenres()) {
+        if (request.getGenres() == null || request.getGenres().isEmpty()) {
+            updFilm.setGenres(new HashSet<>());
+        } else {
             updFilm.setGenres(request.getGenres());
+        }
+
+        if (request.getDirectors() == null || request.getDirectors().isEmpty()) {
+            updFilm.setDirectors(new ArrayList<>());
+        } else {
+            updFilm.setDirectors(request.getDirectors());
         }
 
         updFilm = filmStorage.update(updFilm);
@@ -106,7 +116,56 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    public Collection<Film> getPopularFilms(int count, int genreId, int year) {
+        log.debug("Получение списка популярных фильмов");
+        if (genreId == -1 && year == -1) {
+            return filmStorage.getPopularFilms(count);
+        }
+        return filmStorage.getPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        log.info("Получение общих фильмов пользователей");
+        if (userId == null || userId <= 0 && friendId == null || friendId <= 0) {
+            throw new IllegalArgumentException("Некорректные идентификаторы пользователей.");
+        }
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     public FilmDto findFilmById(long id) {
         return FilmMapper.mapToFilmDto(filmStorage.findFilmById(id));
+    }
+
+    public Collection<FilmDto> getSortedFilmsByDirector(long directorId, String[] sortParams) {
+        return filmStorage.getSortedFilmsByDirector(directorId, sortParams)
+                .stream()
+                .map(FilmMapper::mapToFilmDto)
+                .collect(Collectors.toList());
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        query = query.trim();
+        query = "%" + query + "%";
+        if (by.size() == 2) {
+            log.debug("Получение списка фильмов по названию и режиссеру");
+            return filmStorage.searchFilmsByTitleAndDirector(query);
+        } else if (by.isEmpty()) {
+            throw new UnclassifiedException("Не переданы параметры для поиска");
+        } else {
+            switch (by.get(0)) {
+                case "title":
+                    log.debug("Получение списка фильмов по названию");
+                    return filmStorage.searchFilmsByTitle(query);
+                case "director":
+                    log.debug("Получение списка фильмов по режиссеру");
+                    return filmStorage.searchFilmsByDirector(query);
+                default:
+                    throw new UnclassifiedException("Поиск по этому параметру не реализован");
+            }
+        }
+    }
+
+    public void deleteFilm(long id) {
+        filmStorage.deleteFilm(id);
     }
 }
