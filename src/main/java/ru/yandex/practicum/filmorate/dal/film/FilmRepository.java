@@ -225,6 +225,7 @@ public class FilmRepository extends BaseRepository<Film> {
         for (Film film : commonFilms) {
             Optional<Film> filmWithDetails = getFilmById(film.getId());
             filmWithDetails.ifPresent(updatedFilm -> film.setGenres(updatedFilm.getGenres()));
+            filmWithDetails.ifPresent(updatedFilm -> film.setMpa(updatedFilm.getMpa()));
         }
 
         return commonFilms;
