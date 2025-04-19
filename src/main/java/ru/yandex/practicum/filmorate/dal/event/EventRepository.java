@@ -30,7 +30,7 @@ public class EventRepository extends BaseRepository<Event> {
         this.userRepository = userRepository;
     }
 
-    public List<Event> getEventListByUserId(long id) {;
+    public List<Event> getEventListByUserId(long id) {
         if (userRepository.findUserById(id).isEmpty()) {
             throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
