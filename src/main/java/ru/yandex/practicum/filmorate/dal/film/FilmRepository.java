@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.BaseRepository;
+import ru.yandex.practicum.filmorate.dal.director.DirectorRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
-
+    private final DirectorRepository directorRepository;
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = """
             SELECT id,
@@ -118,8 +119,9 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String DELETE_GENRE_OF_FILM_QUERY = "DELETE FROM film_genre WHERE film_id = ?";
     private static final String DELETE_LIKES_OF_FILM_QUERY = "DELETE FROM likes WHERE film_id = ?";
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, DirectorRepository directorRepository) {
         super(jdbc, mapper);
+        this.directorRepository = directorRepository;
     }
 
     public List<Film> findAllFilms() {
@@ -283,6 +285,10 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public Collection<Film> getSortedFilmsByDirector(long directorId, String[] sortParams) {
         Collection<Film> films;
+
+        if (directorRepository.findDirectorById(directorId).isEmpty()) {
+            throw new NotFoundException("Режиссер не может быть найден");
+        }
 
         if (isValidSortParams(sortParams)) {
             String query = FIND_SORTED_FILMS_BY_DIRECTORS_ID + " ORDER BY " + setOrderBy(sortParams);

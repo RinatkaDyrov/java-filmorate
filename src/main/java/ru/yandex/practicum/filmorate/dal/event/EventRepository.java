@@ -21,8 +21,13 @@ public class EventRepository extends BaseRepository<Event> {
     private final UserRepository userRepository;
     private static final String FIND_EVENT_LIST_BY_USER_ID = "SELECT * FROM events WHERE user_id=?";
     private static final String INSERT_NEW_EVENT = """
-            INSERT INTO events (time_stamp, user_id, event_type, operation, entity_id)
-            VALUES (?, ?, ?, ?, ?)""";
+            INSERT INTO events (time_stamp,
+                                user_id,
+                                event_type,
+                                operation,
+                                entity_id)
+            VALUES (?, ?, ?, ?, ?)
+            """;
 
     @Autowired
     public EventRepository(JdbcTemplate jdbc, RowMapper<Event> mapper, UserRepository userRepository) {
