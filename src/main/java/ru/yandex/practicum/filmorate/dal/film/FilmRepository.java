@@ -60,8 +60,7 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_GENRES_BY_FILM_QUERY = """
             SELECT g.id, g.name
             FROM genre g
-            JOIN film_genre fg
-            ON g.id = fg.genre_id
+            JOIN film_genre fg ON g.id = fg.genre_id
             WHERE fg.film_id = ?
             ORDER BY g.id ASC
             """;
@@ -298,6 +297,7 @@ public class FilmRepository extends BaseRepository<Film> {
         }
 
         for (Film film : films) {
+            setGenreAndRatingToFilm(film);
             setDirectorToFilm(film);
         }
 
