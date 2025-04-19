@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dal.event;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -15,12 +16,12 @@ import java.util.List;
 @Slf4j
 @Repository
 public class EventRepository extends BaseRepository<Event> {
-
     private static final String FIND_EVENT_LIST_BY_USER_ID = "SELECT * FROM events WHERE user_id=?";
     private static final String INSERT_NEW_EVENT = """
             INSERT INTO events (time_stamp, user_id, event_type, operation, entity_id)
             VALUES (?, ?, ?, ?, ?)""";
 
+    @Autowired
     public EventRepository(JdbcTemplate jdbc, RowMapper<Event> mapper) {
         super(jdbc, mapper);
     }
