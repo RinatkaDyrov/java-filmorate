@@ -59,7 +59,7 @@ public class FilmController {
     @ResponseStatus(HttpStatus.OK)
     public void setLike(@PathVariable long filmId,
                         @PathVariable long userId) {
-        log.debug("Пользователь (Id: {}) ставит лайк фильму (Id: {})", userId, filmId);
+        log.info("Пользователь (Id: {}) ставит лайк фильму (Id: {})", userId, filmId);
         filmService.setLike(userId, filmId);
     }
 
@@ -73,7 +73,9 @@ public class FilmController {
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count, @RequestParam(defaultValue = "-1") int genreId, @RequestParam(defaultValue = "-1") int year) {
+    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count,
+                                            @RequestParam(defaultValue = "-1") int genreId,
+                                            @RequestParam(defaultValue = "-1") int year) {
         log.debug("Получаем список {} популярных фильмов", count);
         return filmService.getPopularFilms(count, genreId, year);
     }

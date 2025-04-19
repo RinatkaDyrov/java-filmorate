@@ -30,8 +30,9 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public Review update(Review review) {
         log.info("Обновление отзыва: {}", review);
-        eventRepository.updateReviewEvent(review.getUserId(), review.getReviewId());
-        return reviewRepository.update(review);
+        Review updReview = reviewRepository.update(review);
+        eventRepository.updateReviewEvent(updReview.getUserId(), updReview.getReviewId());
+        return updReview;
     }
 
     @Override

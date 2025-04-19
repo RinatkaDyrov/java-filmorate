@@ -97,8 +97,12 @@ public class UserDbStorage implements UserStorage {
     @Override
     public boolean removeFriend(long userId, long friendId) {
         log.debug("Запрос удаления из друзей от пользователя в хранилище");
+        boolean deletingStatus = friendshipRepository.removeFriend(userId, friendId);
+        if (deletingStatus) {
+            log.debug("Успешно");
+        }
         eventRepository.removeFriendEvent(userId, friendId);
-        return friendshipRepository.removeFriend(userId, friendId);
+        return deletingStatus;
     }
 
     @Override
