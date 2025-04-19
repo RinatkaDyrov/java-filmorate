@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dal.event.EventRepository;
 import ru.yandex.practicum.filmorate.dal.film.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.like.LikeRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
@@ -67,13 +66,16 @@ public class FilmDbStorage implements FilmStorage {
     public boolean addLike(long userId, long filmId) {
         log.debug("Добавление лайка в хранилище");
         if (userRepository.findUserById(userId).isEmpty()) {
+            System.out.println(userRepository.findUserById(userId));
             throw new NotFoundException("Пользователь не найден");
         }
         if (filmRepository.getFilmById(filmId).isEmpty()) {
             throw new NotFoundException("Фильм не найден");
         }
         if (likeRepository.isThisPairExist(userId, filmId)) {
-            throw new ConditionsNotMetException("У вас уже стоит лайк на данном фильме");
+            log.debug("Пользователь (ID: {}) уже поставил лайк фильму (ID: {})", userId, filmId);
+            eventRepository.addLikeEvent(userId, filmId);
+            return true;
         }
         eventRepository.addLikeEvent(userId, filmId);
         return likeRepository.addLike(userId, filmId);
@@ -82,8 +84,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public boolean removeLike(long userId, long filmId) {
         log.debug("Удаление лайка в хранилище");
+        boolean deleteLikeSuccess = likeRepository.deleteLike(userId, filmId);
         eventRepository.removeLikeEvent(userId, filmId);
-        return likeRepository.deleteLike(userId, filmId);
+        return deleteLikeSuccess;
     }
 
     @Override

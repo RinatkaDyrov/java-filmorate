@@ -9,17 +9,24 @@ import ru.yandex.practicum.filmorate.dal.BaseRepository;
 import ru.yandex.practicum.filmorate.dal.user.UserRepository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.OperationType;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Repository
 public class EventRepository extends BaseRepository<Event> {
     private final UserRepository userRepository;
-    private static final String FIND_EVENT_LIST_BY_USER_ID = "SELECT * FROM events WHERE user_id=?";
+
+    private static final String FIND_EVENT_LIST_BY_USER_ID = """
+            SELECT * FROM events
+            WHERE user_id=?
+            """;
+
     private static final String INSERT_NEW_EVENT = """
             INSERT INTO events (time_stamp,
                                 user_id,
@@ -36,7 +43,8 @@ public class EventRepository extends BaseRepository<Event> {
     }
 
     public List<Event> getEventListByUserId(long id) {
-        if (userRepository.findUserById(id).isEmpty()) {
+        Optional<User> user = userRepository.findUserById(id);
+        if (user.isEmpty()) {
             throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
         return findMany(FIND_EVENT_LIST_BY_USER_ID, id);
