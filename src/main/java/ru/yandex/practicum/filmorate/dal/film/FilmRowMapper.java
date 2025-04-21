@@ -5,12 +5,13 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
-public class FilmRowMapper implements RowMapper<Film> {
+public class FilmRowMapper implements RowMapper<Film>, Serializable {
 
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
@@ -31,6 +32,10 @@ public class FilmRowMapper implements RowMapper<Film> {
         Mpa mpa = new Mpa();
         mpa.setId(resultSet.getLong("rating_id"));
         film.setMpa(mpa);
+
+//        Director director = new Director();
+//        director.setId(resultSet.getLong("director_id"));
+//        film.setDirector(director);
 
         return film;
     }

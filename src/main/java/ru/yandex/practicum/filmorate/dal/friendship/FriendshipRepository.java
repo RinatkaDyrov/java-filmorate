@@ -16,10 +16,29 @@ import java.util.Map;
 @Slf4j
 @Repository
 public class FriendshipRepository extends BaseRepository<Friendship> {
-    private static final String FIND_FRIENDS_BY_USER_QUERY = "SELECT u.* FROM users u JOIN friendship f ON u.id = f.friend_id WHERE f.user_id = ?";
-    private static final String FIND_FRIENDS_COUNT_BY_USER_QUERY = "SELECT COUNT(*) FROM friendship WHERE user_id = ? AND confirm_status = TRUE";
-    private static final String INSERT_QUERY_FOR_ADD_FRIEND = "INSERT INTO friendship (user_id, friend_id, confirm_status) VALUES (?, ?, FALSE)";
-    private static final String UPDATE_QUERY_TO_CONFIRM_FRIEND = "INSERT INTO friendship (user_id, friend_id, confirm_status) VALUES (?, ?, TRUE)";
+    private static final String FIND_FRIENDS_BY_USER_QUERY = """
+            SELECT u.*
+            FROM users u
+            JOIN friendship f ON u.id = f.friend_id
+            WHERE f.user_id = ?
+            """;
+    private static final String FIND_FRIENDS_COUNT_BY_USER_QUERY = """
+            SELECT COUNT(*)
+            FROM friendship
+            WHERE user_id = ? AND confirm_status = TRUE
+            """;
+    private static final String INSERT_QUERY_FOR_ADD_FRIEND = """
+            INSERT INTO friendship (user_id,
+                                    friend_id,
+                                    confirm_status)
+            VALUES (?, ?, FALSE)
+            """;
+    private static final String UPDATE_QUERY_TO_CONFIRM_FRIEND = """
+            INSERT INTO friendship (user_id,
+                                    friend_id,
+                                    confirm_status)
+            VALUES (?, ?, TRUE)
+            """;
     private static final String DELETE_QUERY = "DELETE FROM friendship WHERE (user_id = ? AND friend_id = ?)";
     private static final String FIND_COMMON_FRIENDS_QUERY = """
             SELECT u.* FROM friendship f1
@@ -27,7 +46,11 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
             JOIN users u ON u.id = f1.friend_id
             WHERE f1.user_id = ? AND f2.user_id = ?
             """;
-    private static final String FRIENDSHIP_CHECK_QUERY = "SELECT * FROM friendship WHERE user_id = ? AND friend_id = ? AND confirm_status = TRUE";
+    private static final String FRIENDSHIP_CHECK_QUERY = """
+            SELECT *
+            FROM friendship
+            WHERE user_id = ? AND friend_id = ? AND confirm_status = TRUE
+            """;
 
 
     public FriendshipRepository(JdbcTemplate jdbc, RowMapper<Friendship> mapper) {

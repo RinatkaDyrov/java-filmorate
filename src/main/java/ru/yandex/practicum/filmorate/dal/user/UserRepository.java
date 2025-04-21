@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.BaseRepository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -25,6 +26,9 @@ public class UserRepository extends BaseRepository<User> {
     private static final String INSERT_QUERY = "INSERT INTO users(login, name, email, birthday)" +
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
+    private static final String DELETE_LIKES_OF_USER_QUERY = "DELETE FROM likes WHERE user_id = ?";
+    private static final String DELETE_FRIENDS_OF_USER_QUERY = "DELETE FROM friendship WHERE user_id = ? OR friend_id = ?";
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ?";
 
     public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -63,12 +67,26 @@ public class UserRepository extends BaseRepository<User> {
                 user.getEmail(), user.getLogin(), user.getName(), Date.valueOf(user.getBirthday()), user.getId());
 
         update(UPDATE_QUERY,
+                user.getEmail(),
                 user.getLogin(),
                 user.getName(),
-                user.getEmail(),
                 Date.valueOf(user.getBirthday()),
                 user.getId());
         log.debug("Пользователь ({}) обновлен в базе данных", user.getId());
         return user;
+    }
+
+    public void deleteUser(Long id) {
+        checkUser(id);
+        delete(DELETE_LIKES_OF_USER_QUERY, id);
+        delete(DELETE_FRIENDS_OF_USER_QUERY, id, id);
+        delete(DELETE_USER_QUERY, id);
+    }
+
+    private void checkUser(Long id) {
+        Optional<User> user = findUserById(id);
+        if (user.isEmpty()) {
+            throw new NotFoundException("User not found");
+        }
     }
 }

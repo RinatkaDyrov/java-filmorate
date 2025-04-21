@@ -30,6 +30,9 @@ public class FilmMapper {
         if (film.getMpa() != null) {
             dto.setMpa(film.getMpa());
         }
+        if (film.getDirectors() != null) {
+            dto.setDirectors(film.getDirectors());
+        }
 
         return dto;
     }
@@ -45,8 +48,8 @@ public class FilmMapper {
         }
         film.setReleaseDate(request.getReleaseDate());
         film.setDuration(request.getDuration());
-
-        film.setMpa(request.getMpa());  // Один рейтинг для фильма
+        film.setMpa(request.getMpa());
+        film.setDirectors(request.getDirectors());
         return film;
     }
 
@@ -73,6 +76,9 @@ public class FilmMapper {
         }
         if (request.hasMpa()) {
             film.setMpa(request.getMpa());
+        }
+        if (request.hasDirectors()) {
+            film.setDirectors(request.getDirectors());
         }
         return film;
     }
