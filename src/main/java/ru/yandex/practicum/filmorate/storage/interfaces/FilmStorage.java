@@ -69,5 +69,5 @@ public interface FilmStorage {
 
     default boolean isThisPairExist(long userId, long filmId) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
-    };
+    }
 }

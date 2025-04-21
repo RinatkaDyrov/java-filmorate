@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dal.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -17,6 +18,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
+    private static final String INSERT_DIRECTORS_QUERY = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
     private final DirectorRepository directorRepository;
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = """
@@ -177,7 +180,9 @@ public class FilmRepository extends BaseRepository<Film> {
             List<Long> genreIds = film.getGenres().stream().map(Genre::getId).toList();
 
             String inSql = genreIds.stream().map(id -> "?").collect(Collectors.joining(", "));
-            List<Long> existingGenreIds = jdbc.queryForList("SELECT id FROM genre WHERE id IN (" + inSql + ")", Long.class, genreIds.toArray());
+            List<Long> existingGenreIds = jdbc.queryForList("SELECT id FROM genre WHERE id IN (" + inSql + ")",
+                    Long.class,
+                    genreIds.toArray());
 
             for (Long genreId : genreIds) {
                 if (!existingGenreIds.contains(genreId)) {
@@ -185,20 +190,37 @@ public class FilmRepository extends BaseRepository<Film> {
                 }
             }
 
-            for (Long genreId : genreIds) {
-                jdbc.update("INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)", film.getId(), genreId);
-            }
+            jdbc.batchUpdate(INSERT_TO_FILM_GENRES_TABLE_QUERY,
+                    new BatchPreparedStatementSetter() {
+                        @Override
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setLong(1, film.getId());
+                            ps.setLong(2, genreIds.get(i));
+                        }
+
+                        @Override
+                        public int getBatchSize() {
+                            return genreIds.size();
+                        }
+                    });
+
         }
 
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            for (Director director : film.getDirectors()) {
-                String directorCheckQuery = "SELECT COUNT(*) FROM directors WHERE id = ?";
-                Integer directorCount = jdbc.queryForObject(directorCheckQuery, Integer.class, director.getId());
-                if (directorCount == null || directorCount == 0) {
-                    throw new NotFoundException("Director with ID " + director.getId() + " wasn't found");
-                }
-                jdbc.update("INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)", film.getId(), director.getId());
-            }
+            List<Long> directorsId = film.getDirectors().stream().map(Director::getId).toList();
+            jdbc.batchUpdate(INSERT_DIRECTORS_QUERY,
+                    new BatchPreparedStatementSetter() {
+                        @Override
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setLong(1, film.getId());
+                            ps.setLong(2, directorsId.get(i));
+                        }
+
+                        @Override
+                        public int getBatchSize() {
+                            return directorsId.size();
+                        }
+                    });
         }
         setGenreAndRatingToFilm(film);
         setDirectorToFilm(film);
@@ -349,7 +371,7 @@ public class FilmRepository extends BaseRepository<Film> {
             Optional<Film> optionalFilm = getFilmById(id);
             optionalFilm.ifPresent(films::add);
         }
-        films.sort((f1, f2) -> f1.getLikes().size() - f2.getLikes().size());
+        films.sort(Comparator.comparingInt(f -> f.getLikes().size()));
         return films;
     }
 

@@ -11,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.yandex.practicum.filmorate.controller.ReviewController;
+import ru.yandex.practicum.filmorate.dto.review.NewReviewRequest;
+import ru.yandex.practicum.filmorate.dto.review.ReviewDto;
+import ru.yandex.practicum.filmorate.dto.review.UpdateReviewRequest;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -44,23 +47,23 @@ class ReviewControllerTest {
 
     @Test
     void createReviewTest() throws Exception {
-        Review review = new Review(1L, "Тест Great movie!", true, 1L, 2L, 0);
-        when(reviewService.createReview(any(Review.class))).thenReturn(review);
+        ReviewDto dto = new ReviewDto(1L, "Тест Great movie!", true, 1L, 2L, 0);
+        when(reviewService.createReview(any(NewReviewRequest.class))).thenReturn(dto);
 
         mockMvc.perform(post("/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(review)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("Тест Great movie!"));
 
-        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+        ArgumentCaptor<NewReviewRequest> captor = ArgumentCaptor.forClass(NewReviewRequest.class);
         verify(reviewService).createReview(captor.capture());
         assertEquals("Тест Great movie!", captor.getValue().getContent());
     }
 
     @Test
     void findByIdTest() throws Exception {
-        Review review = new Review(1L, "Тест Great movie!", true, 1L, 2L, 0);
+        ReviewDto review = new ReviewDto(1L, "Тест Great movie!", true, 1L, 2L, 0);
         when(reviewService.getReviewById(anyLong())).thenReturn(review);
 
         mockMvc.perform(get("/reviews/{id}", 1))
@@ -72,8 +75,8 @@ class ReviewControllerTest {
 
     @Test
     void updateReviewTest() throws Exception {
-        Review review = new Review(1L, "Updated review", true, 1L, 2L, 0);
-        when(reviewService.updateReview(any(Review.class))).thenReturn(review);
+        ReviewDto review = new ReviewDto(1L, "Updated review", true, 1L, 2L, 0);
+        when(reviewService.updateReview(any(UpdateReviewRequest.class))).thenReturn(review);
 
         mockMvc.perform(put("/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -81,7 +84,7 @@ class ReviewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value("Updated review"));
 
-        ArgumentCaptor<Review> captor = ArgumentCaptor.forClass(Review.class);
+        ArgumentCaptor<UpdateReviewRequest> captor = ArgumentCaptor.forClass(UpdateReviewRequest.class);
         verify(reviewService).updateReview(captor.capture());
         assertEquals("Updated review", captor.getValue().getContent());
     }

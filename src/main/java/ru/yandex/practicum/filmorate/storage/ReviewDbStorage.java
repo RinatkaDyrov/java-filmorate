@@ -21,7 +21,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review create(Review review) {
-        log.info("Создание отзыва: {}", review);
+        log.debug("Создание отзыва: {}", review);
         Review newReview = reviewRepository.create(review);
         eventRepository.addReviewEvent(newReview.getUserId(), newReview.getReviewId());
         return newReview;
@@ -29,7 +29,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review update(Review review) {
-        log.info("Обновление отзыва: {}", review);
+        log.debug("Обновление отзыва: {}", review);
         Review updReview = reviewRepository.update(review);
         eventRepository.updateReviewEvent(updReview.getUserId(), updReview.getReviewId());
         return updReview;
@@ -37,7 +37,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteById(Long reviewId) {
-        log.info("Удаление отзыва с ID: {}", reviewId);
+        log.debug("Удаление отзыва с ID: {}", reviewId);
         Review deletedReview = findById(reviewId)
                 .orElseThrow(() -> new NotFoundException("Ревью с ID: " + reviewId + " не найдено."));
         eventRepository.removeReviewEvent(deletedReview.getUserId(), reviewId);
@@ -46,37 +46,37 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Optional<Review> findById(Long reviewId) {
-        log.info("Поиск отзыва с ID: {}", reviewId);
+        log.debug("Поиск отзыва с ID: {}", reviewId);
         return reviewRepository.findById(reviewId);
     }
 
     @Override
     public List<Review> findAllByFilmId(Long filmId, int count) {
-        log.info("Поиск отзывов для фильма с ID: {} с количеством: {}", filmId, count);
+        log.debug("Поиск отзывов для фильма с ID: {} с количеством: {}", filmId, count);
         return reviewRepository.findAllByFilmId(filmId, count);
     }
 
     @Override
     public List<Review> findAll() {
-        log.info("Поиск всех отзывов");
+        log.debug("Поиск всех отзывов");
         return reviewRepository.findAll();
     }
 
     @Override
     public void addLike(Long reviewId, Long userId) {
-        log.info("Добавление лайка к отзыву с ID: {} от пользователя с ID: {}", reviewId, userId);
+        log.debug("Добавление лайка к отзыву с ID: {} от пользователя с ID: {}", reviewId, userId);
         reviewRepository.addLike(reviewId, userId);
     }
 
     @Override
     public void addDislike(Long reviewId, Long userId) {
-        log.info("Добавление дизлайка к отзыву с ID: {} от пользователя с ID: {}", reviewId, userId);
+        log.debug("Добавление дизлайка к отзыву с ID: {} от пользователя с ID: {}", reviewId, userId);
         reviewRepository.addDislike(reviewId, userId);
     }
 
     @Override
     public void removeReaction(Long reviewId, Long userId) {
-        log.info("Удаление реакции от отзыва с ID: {} от пользователя с ID: {}", reviewId, userId);
+        log.debug("Удаление реакции от отзыва с ID: {} от пользователя с ID: {}", reviewId, userId);
         reviewRepository.removeReaction(reviewId, userId);
     }
 }

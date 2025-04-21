@@ -39,9 +39,6 @@ public class FilmController {
     @ResponseStatus(HttpStatus.CREATED)
     public FilmDto create(@Valid @RequestBody NewFilmRequest request) {
         log.debug("Добавление нового фильма");
-        System.out.println();
-        System.out.println(request);
-        System.out.println();
         return filmService.createFilm(request);
     }
 

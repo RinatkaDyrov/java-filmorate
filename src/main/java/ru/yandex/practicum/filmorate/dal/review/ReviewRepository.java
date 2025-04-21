@@ -117,14 +117,14 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
 
     @Override
     public void addLike(Long reviewId, Long userId) {
-        removeReaction(reviewId, userId); // удаляем, если был дизлайк
+        removeReaction(reviewId, userId);
         jdbc.update(ADD_LIKE_REVIEW, reviewId, userId);
         incrementUseful(reviewId);
     }
 
     @Override
     public void addDislike(Long reviewId, Long userId) {
-        removeReaction(reviewId, userId); // удаляем, если был лайк
+        removeReaction(reviewId, userId);
         jdbc.update(ADD_DIS_LIKE_REVIEW, reviewId, userId);
         decrementUseful(reviewId);
     }
@@ -142,7 +142,7 @@ public class ReviewRepository extends BaseRepository<Review> implements ReviewSt
     private Boolean getRatingType(Long reviewId, Long userId) {
         List<Boolean> result = jdbc.query(GET_RATING_TYPE_REVIEW,
                 (rs, rowNum) -> rs.getBoolean("is_useful"), reviewId, userId);
-        return result.isEmpty() ? null : result.get(0);
+        return result.isEmpty() ? null : result.getFirst();
     }
 
     private void incrementUseful(Long reviewId) {

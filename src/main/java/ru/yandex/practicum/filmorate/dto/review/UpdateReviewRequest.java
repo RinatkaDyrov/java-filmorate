@@ -7,6 +7,9 @@ import lombok.Data;
 @Data
 public class UpdateReviewRequest {
 
+    @NotNull
+    Long reviewId;
+
     @NotBlank(message = "Отзыв должен быть заполнен")
     String content;
 
@@ -32,6 +35,7 @@ public class UpdateReviewRequest {
     public boolean hasUserId() {
         return !(userId == null);
     }
+
     public boolean hasFilmId() {
         return !(filmId == null);
     }

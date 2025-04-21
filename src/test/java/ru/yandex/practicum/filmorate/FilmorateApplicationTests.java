@@ -28,6 +28,9 @@ class FilmorateApplicationTests {
     @Autowired
     private DirectorService directorService;
 
+    @Autowired
+    private EventService eventService;
+
     @Test
     void contextLoads() {
         assertNotNull(userService);
@@ -36,5 +39,6 @@ class FilmorateApplicationTests {
         assertNotNull(genreService);
         assertNotNull(reviewService);
         assertNotNull(directorService);
+        assertNotNull(eventService);
     }
 }
