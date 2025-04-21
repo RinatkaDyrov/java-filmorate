@@ -111,7 +111,8 @@ public class LikeRepository extends BaseRepository<Like> {
 
     public boolean addLike(long userId, long filmId) {
         log.debug("Запрос лайка от пользователя (Id: {}) на фильм (Id: {})", userId, filmId);
-        int rowsAffected = jdbc.update(INSERT_QUERY, userId, filmId);
+        int rowsAffected;
+        rowsAffected = jdbc.update(INSERT_QUERY, userId, filmId);
         return rowsAffected > 0;
     }
 

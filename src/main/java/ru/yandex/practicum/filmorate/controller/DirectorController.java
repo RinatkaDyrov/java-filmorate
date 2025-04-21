@@ -40,14 +40,12 @@ public class DirectorController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public DirectorDto update(@Valid @RequestBody UpdateDirectorRequest request) {
         log.debug("Обновление режиссера ID: {}", request.getId());
         return directorService.updateDirector(request);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteDirector(@PathVariable long id) {
         log.debug("Удаление режиссера ID: {}", id);
         directorService.deleteDirectorById(id);

@@ -15,7 +15,6 @@ import java.util.Set;
 
 @Data
 public class NewFilmRequest {
-    private long id;
     @NotNull(message = "Необходимо указать название")
     @NotBlank(message = "Название не может быть пустым")
     private String name;
@@ -26,5 +25,5 @@ public class NewFilmRequest {
     private int duration;
     private Set<Genre> genres;
     private Mpa mpa;
-    private List<Director> directors;
+    private Set<Director> directors;
 }

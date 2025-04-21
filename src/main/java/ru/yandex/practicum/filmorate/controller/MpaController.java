@@ -18,13 +18,11 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public Collection<MpaDto> findAll() {
         return mpaService.getAllRatings();
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public MpaDto findByMpaId(@PathVariable long id) {
         log.info("Поиск рейтинга по id {}", id);
         return mpaService.findByMpaId(id);

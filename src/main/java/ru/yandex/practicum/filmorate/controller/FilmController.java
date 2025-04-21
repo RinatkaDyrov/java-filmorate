@@ -46,7 +46,6 @@ public class FilmController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public FilmDto update(@Valid @RequestBody UpdateFilmRequest request) {
         log.debug("Обновляем данные пользователя (Id: {})", request.getId());
         System.out.println();
@@ -56,15 +55,13 @@ public class FilmController {
     }
 
     @PutMapping("/{filmId}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public void setLike(@PathVariable long filmId,
                         @PathVariable long userId) {
-        log.info("Пользователь (Id: {}) ставит лайк фильму (Id: {})", userId, filmId);
+        log.debug("Пользователь (Id: {}) ставит лайк фильму (Id: {})", userId, filmId);
         filmService.setLike(userId, filmId);
     }
 
     @DeleteMapping("/{filmId}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteLike(@PathVariable long filmId,
                            @PathVariable long userId) {
         log.debug("Пользователь (Id: {}) убирает лайк с фильма (Id: {})", userId, filmId);
@@ -72,7 +69,6 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count,
                                             @RequestParam(defaultValue = "-1") int genreId,
                                             @RequestParam(defaultValue = "-1") int year) {
@@ -81,14 +77,12 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    @ResponseStatus(HttpStatus.OK)
     public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
         log.debug("Пользователь - {} получает общие фильмы с Пользователем - {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
 
     @GetMapping("/director/{directorId}")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<FilmDto> getDirectorsFilmsSortedByParams(@PathVariable long directorId,
                                                                @RequestParam(defaultValue = "") String sortBy) {
         String[] sortParams = sortBy.split(",");
@@ -96,14 +90,12 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<Film> searchFilms(@RequestParam String query, @RequestParam List<String> by) {
-        log.debug("Поиск фильмов по запросу", query, by);
+        log.debug("Поиск фильмов по запросу query = {}, by = {}", query, by);
         return filmService.searchFilms(query, by);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteFilm(@PathVariable Long id) {
         filmService.deleteFilm(id);
     }

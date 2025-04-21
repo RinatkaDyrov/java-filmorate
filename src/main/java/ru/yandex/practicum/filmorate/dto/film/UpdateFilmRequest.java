@@ -26,7 +26,7 @@ public class UpdateFilmRequest {
     private int duration;
     private Set<Genre> genres;
     private Mpa mpa;
-    private List<Director> directors;
+    private Set<Director> directors;
 
     public boolean hasName() {
         return !(name == null || name.isBlank());

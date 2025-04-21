@@ -18,13 +18,11 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public Collection<GenreDto> findAll() {
         return genreService.getAllGenres();
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public GenreDto findByGenreId(@PathVariable long id) {
         log.info("Поиск жанра по id {}", id);
         return genreService.findByGenreId(id);

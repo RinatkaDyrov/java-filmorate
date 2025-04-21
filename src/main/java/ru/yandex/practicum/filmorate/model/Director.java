@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class Director {
-    long id;
+    Long id;
     @NotNull
     String name;
 }

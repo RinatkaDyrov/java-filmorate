@@ -1,17 +1,12 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto.review;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
-@AllArgsConstructor
-public class Review {
+public class NewReviewRequest {
 
-    private Long reviewId;
     @NotBlank(message = "Отзыв должен быть заполнен")
     String content;
 

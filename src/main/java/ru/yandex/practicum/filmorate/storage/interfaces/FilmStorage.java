@@ -66,4 +66,8 @@ public interface FilmStorage {
     default void deleteFilm(Long id) {
         throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
     }
+
+    default boolean isThisPairExist(long userId, long filmId) {
+        throw new UnsupportedOperationException("Не поддерживается в данном хранилище");
+    };
 }

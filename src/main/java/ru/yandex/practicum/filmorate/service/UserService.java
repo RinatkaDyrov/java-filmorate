@@ -55,7 +55,7 @@ public class UserService {
 
     public UserDto updateUser(long id, UpdateUserRequest request) {
         User updUser = userStorage.findUserById(id);
-        updUser = UserMapper.updateUserFields(updUser, request);
+        UserMapper.updateUserFields(updUser, request);
         updUser = userStorage.update(updUser);
         return UserMapper.mapToUserDto(updUser);
     }

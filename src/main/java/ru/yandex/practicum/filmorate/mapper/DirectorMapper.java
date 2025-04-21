@@ -23,7 +23,7 @@ public class DirectorMapper {
     public static Director mapToDirector(NewDirectorRequest request) {
         log.debug("Конвертируем запрос в Director");
         Director director = new Director();
-        director.setId(request.getId());
+//        director.setId(request.getId());
         director.setName(request.getName());
         return director;
     }

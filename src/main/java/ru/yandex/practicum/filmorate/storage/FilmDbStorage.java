@@ -65,18 +65,6 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public boolean addLike(long userId, long filmId) {
         log.debug("Добавление лайка в хранилище");
-        if (userRepository.findUserById(userId).isEmpty()) {
-            System.out.println(userRepository.findUserById(userId));
-            throw new NotFoundException("Пользователь не найден");
-        }
-        if (filmRepository.getFilmById(filmId).isEmpty()) {
-            throw new NotFoundException("Фильм не найден");
-        }
-        if (likeRepository.isThisPairExist(userId, filmId)) {
-            log.debug("Пользователь (ID: {}) уже поставил лайк фильму (ID: {})", userId, filmId);
-            eventRepository.addLikeEvent(userId, filmId);
-            return true;
-        }
         eventRepository.addLikeEvent(userId, filmId);
         return likeRepository.addLike(userId, filmId);
     }
@@ -87,6 +75,11 @@ public class FilmDbStorage implements FilmStorage {
         boolean deleteLikeSuccess = likeRepository.deleteLike(userId, filmId);
         eventRepository.removeLikeEvent(userId, filmId);
         return deleteLikeSuccess;
+    }
+
+    @Override
+    public boolean isThisPairExist(long userId, long filmId) {
+        return likeRepository.isThisPairExist(userId, filmId);
     }
 
     @Override

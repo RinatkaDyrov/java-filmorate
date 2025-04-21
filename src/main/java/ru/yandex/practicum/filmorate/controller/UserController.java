@@ -26,7 +26,6 @@ public class UserController {
     private final EventService eventService;
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> findAll() {
         return userService.getAllUsers();
     }
@@ -39,14 +38,12 @@ public class UserController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public UserDto update(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         log.debug("Обновление пользователя (Id: {})", updateUserRequest.getId());
         return userService.updateUser(updateUserRequest.getId(), updateUserRequest);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
     public void addFriend(@PathVariable long id,
                           @PathVariable long friendId) {
         log.debug("Пользователь (Id: {}) добавляет в друзья пользователя (Id: {})", id, friendId);
@@ -54,7 +51,6 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteFriend(@PathVariable long id,
                              @PathVariable long friendId) {
         log.debug("Пользователь (Id: {}) удаляет пользователя (Id: {}) из друзей", id, friendId);
@@ -62,7 +58,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getFriendsByUserId(@PathVariable long id) {
         log.debug("Запрос на список друзей пользователя (Id: {})", id);
         userService.getUserById(id);
@@ -75,7 +70,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{friendId}")
-    @ResponseStatus(HttpStatus.OK)
     public Collection<UserDto> getCommonFriends(@PathVariable long id,
                                                 @PathVariable long friendId) {
         log.debug("Запрос на список общих друзей пользователя (Id: {}) и пользователя (Id: {})", id, friendId);
@@ -83,26 +77,22 @@ public class UserController {
     }
 
     @GetMapping("/{id}/recommendations")
-    @ResponseStatus(HttpStatus.OK)
     public List<FilmDto> getRecommendations(@PathVariable Long id) {
         log.debug("Запрос на список рекомендаций для пользователя (Id: {})", id);
         return userService.getRecommendations(id);
     }
 
     @GetMapping("/{id}/feed")
-    @ResponseStatus(HttpStatus.OK)
     public List<Event> getEventsByUserId(@PathVariable() long id) {
         return eventService.getEventListByUserId(id);
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteUser(@PathVariable long id) {
         userService.deleteUser(id);
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public UserDto getUserById(@PathVariable long id) {
         return userService.getUserById(id);
     }

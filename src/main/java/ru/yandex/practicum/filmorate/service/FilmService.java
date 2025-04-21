@@ -76,7 +76,7 @@ public class FilmService {
         }
 
         if (request.getDirectors() == null || request.getDirectors().isEmpty()) {
-            updFilm.setDirectors(new ArrayList<>());
+            updFilm.setDirectors(new HashSet<>());
         } else {
             updFilm.setDirectors(request.getDirectors());
         }
@@ -89,7 +89,12 @@ public class FilmService {
     public void setLike(long userId, long filmId) {
         log.debug("Пользователь (userID: {}) ставит лайк фильму (filmID: {})", userId, filmId);
 
+        if (filmStorage.isThisPairExist(userId, filmId)){
+            log.debug("Пользователь (userID: {}) уже поставил лайк фильму (filmID: {})", userId, filmId);
+            }
+
         boolean success = filmStorage.addLike(userId, filmId);
+
         if (success) {
             log.debug("Пользователь (userID: {}) поставил лайк фильму (filmID: {})", userId, filmId);
         } else {

@@ -125,9 +125,9 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public List<Film> findAllFilms() {
         return findMany(FIND_ALL_QUERY).stream()
-                .map(x -> x.getId())
-                .map(x -> getFilmById(x))
-                .map(x -> x.get())
+                .map(Film::getId)
+                .map(this::getFilmById)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 
@@ -256,12 +256,12 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     private void setDirectorToFilm(Film film) {
-        List<Director> directors = jdbc.query(FIND_DIRECTORS_QUERY, (rs, rowNum) -> {
+        Set<Director> directors = new HashSet<>(jdbc.query(FIND_DIRECTORS_QUERY, (rs, rowNum) -> {
             Director director = new Director();
             director.setId(rs.getLong("id"));
             director.setName(rs.getString("name"));
             return director;
-        }, film.getId());
+        }, film.getId()));
         film.setDirectors(directors);
     }
 
